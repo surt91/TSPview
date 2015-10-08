@@ -30,8 +30,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButtonRandInit.clicked.connect(self.ui.view.randInit)
         self.ui.spinBoxN.valueChanged.connect(self.ui.view.setN)
         self.ui.spinBoxDelay.valueChanged.connect(self.ui.view.setTimestep)
+        self.ui.checkBox2Opt.toggled.connect(self.ui.view.conf.setDo2Opt)
 
         self.ui.view.lenChanged.connect(self.ui.labelLen.setText)
+        self.ui.view.twoOptChanged.connect(self.ui.label2Opt.setText)
 
     def changeMethod(self):
         self.ui.view.conf.changeMethod(str(self.ui.comboMethod.currentText()))

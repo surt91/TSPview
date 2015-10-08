@@ -6,8 +6,24 @@ def dist(a: tuple, b: tuple):
     return sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2)
 
 
-def tourFromWays(ways):
-    raise NotImplementedError
+def tourFromWays(ways_in):
+    ways = list(ways_in)
+    tour = []
+    start = ways.pop()
+    tour.append(start[0])
+    tour.append(start[1])
+    while ways:
+        for n in range(len(ways)):
+            i, j = ways[n]
+            if i == tour[-1]:
+                tour.append(j)
+                ways.pop(n)
+                break
+            elif j == tour[-1]:
+                tour.append(i)
+                ways.pop(n)
+                break
+    return tour
 
 
 def nextNeighborFactory(cities, ways):
@@ -34,7 +50,7 @@ def nextNeighborFactory(cities, ways):
 
         yield (), ((tour[-1], tour[0]), )
 
-    return f
+    return f()
 
 
 def greedyFactory(cities, ways):
@@ -42,7 +58,7 @@ def greedyFactory(cities, ways):
         raise NotImplementedError
         yield nextEdge
 
-    return f
+    return f()
 
 
 def farInFactory(cities, ways):
@@ -80,7 +96,7 @@ def farInFactory(cities, ways):
             tour.insert(minIdx, city)
             best = -1
 
-    return f
+    return f()
 
 
 def randomFactory(cities, ways):
@@ -88,15 +104,32 @@ def randomFactory(cities, ways):
         raise NotImplementedError
         yield nextEdge
 
-    return f
+    return f()
 
 
-def twoOptFactory(cities, ways):
+def twoOptFactory(t, d):
+    def swap():
+        n = len(t)
+        for i in range(n):
+            for j in range(i+1, n):
+
+                # if sum(neueKanten) < sum(alteKanten)
+                if d[t[i]][t[j]] + d[t[i+1]][t[(j+1)%n]] < d[t[i]][t[i+1]] + d[t[j]][t[(j+1)%n]]:
+                    # tausche die Reihenfolge von j bis i+1 um
+                    ct = j-i
+                    for m in range(ct//2):
+                        t[i+ct-m], t[i+1+m] = t[i+1+m], t[i+ct-m]
+                    return False, ((t[i], t[j]), (t[i+1], t[(j+1)%n])), ((t[i], t[i+1]), (t[j], t[j+1]))
+
+        return True, (), ()
+
     def f():
-        raise NotImplementedError
-        yield nextEdge
+        finished = False
+        while not finished:
+            finished, toRemove, toAdd = swap()
+            yield toRemove, toAdd
 
-    return f
+    return f()
 
 
 class Configuration:
@@ -104,15 +137,23 @@ class Configuration:
         self.__cities = tuple(zip(x, y))
         self.__ways = []
         self.__distanceMatrix = self.calcDistanceMatrix()
-        self.finished = True
+        self.__twoOpt = None
+        self.finishedFirst = True
+        self.finished2Opt = True
+        self.do2Opt = True
         self.currentMethod = "Next Neighbor"
+
+    def init(self):
+        self.__ways = []
+        self.__distanceMatrix = self.calcDistanceMatrix()
+        self.initMethod()
+        self.finishedFirst = False
+        self.finished2Opt = False
+        self.__n2Opt = 0
 
     def randomInit(self, N: int):
         self.__cities = tuple((random(), random()) for _ in range(N))
-        self.__ways = []
-        self.calcDistanceMatrix()
-        self.initMethod()
-        self.finished = False
+        self.init()
 
     def calcDistanceMatrix(self):
         return tuple(tuple(dist(i, j) for j in self.__cities) for i in self.__cities)
@@ -131,7 +172,6 @@ class Configuration:
         return True
 
     def removeWay(self, way):
-        print(way, self.__ways)
         try:
             self.__ways.remove(way)
         except ValueError:
@@ -147,33 +187,53 @@ class Configuration:
         self.changeMethod(self.currentMethod)
 
     def changeMethod(self, method: str):
-        print(method)
         if method == "Next Neighbor":
-            self.__heuristic = nextNeighborFactory(self.__cities, self.getWays())()
+            self.__heuristic = nextNeighborFactory(self.__cities, self.getWays())
         elif method == "Greedy":
-            self.__heuristic = greedyFactory(self.__cities, self.getWays())()
+            self.__heuristic = greedyFactory(self.__cities, self.getWays())
         elif method == "Farthest Insertion":
-            self.__heuristic = farInFactory(self.__cities, self.getWays())()
+            self.__heuristic = farInFactory(self.__cities, self.getWays())
         elif method == "Random":
-            self.__heuristic = randomFactory(self.__cities, self.getWays())()
+            self.__heuristic = randomFactory(self.__cities, self.getWays())
         else:
             raise ValueError
-        self.currentMethod = method
+
+        if not self.currentMethod == method:
+            self.currentMethod = method
+            self.init()
 
     def step(self):
-        try:
-            toRemove, toAdd = next(self.__heuristic)
-            for i in toRemove:
-                self.removeWay(i)
-            for i in toAdd:
-                self.addWay(i)
+        if not self.finishedFirst:
+            try:
+                toRemove, toAdd = next(self.__heuristic)
+                for i in toRemove:
+                    self.removeWay(i)
+                for i in toAdd:
+                    self.addWay(i)
+            except StopIteration:
+                self.finishedFirst = True
+                self.__twoOpt = twoOptFactory(tourFromWays(self.__ways), self.__distanceMatrix)
+                pass
 
-        except StopIteration:
-            self.finished = True
-            pass
+        elif self.do2Opt and not self.finished2Opt:
+            try:
+                toRemove, toAdd = next(self.__twoOpt)
+                self.__n2Opt += 1
+                for i in toRemove:
+                    self.removeWay(i)
+                for i in toAdd:
+                    self.addWay(i)
+            except StopIteration:
+                self.finished2Opt = True
 
     def length(self):
         l = 0
         for a, b in self.getWayCoordinates():
             l += dist(a, b)
         return l
+
+    def n2Opt(self):
+        return self.__n2Opt
+
+    def setDo2Opt(self, b):
+        self.do2Opt = b

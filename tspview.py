@@ -1,13 +1,11 @@
-import os
-import logging
-
-from PyQt5 import QtGui, QtCore, QtWidgets, uic
+from PyQt5 import QtGui, QtCore, QtWidgets
 
 from configuration import Configuration
 
 
 class tspView(QtWidgets.QWidget):
     lenChanged = QtCore.pyqtSignal(str)
+    twoOptChanged = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -22,6 +20,9 @@ class tspView(QtWidgets.QWidget):
         self.restartTimer = QtCore.QTimer()
         self.restartTimer.timeout.connect(self.restart)
         self.restartTimer.setSingleShot(True)
+
+        self.scale = 1
+        self.running = False
 
     def restart(self):
         self.randInit()
@@ -71,19 +72,23 @@ class tspView(QtWidgets.QWidget):
         self.N = N
 
     def step(self):
-        if self.conf.finished:
-            self.run(False)
-            self.restartTimer.start(self.timestep * 15)
+        if self.conf.finishedFirst and self.conf.do2Opt and self.conf.finished2Opt:
+            if self.running:
+                self.run(False)
+                self.restartTimer.start(self.timestep * 15)
         else:
             self.conf.step()
             self.update()
             self.lenChanged.emit("%.4f" % self.conf.length())
+            self.twoOptChanged.emit("%d" % self.conf.n2Opt())
 
     def run(self, b=True):
+        self.running = b
         if b:
             self.timer.start(self.timestep)
         else:
             self.timer.stop()
+            self.restartTimer.stop()
 
     def setTimestep(self, s: float):
         self.timestep = 1000*s
