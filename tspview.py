@@ -1,3 +1,5 @@
+from math import sqrt
+
 from PyQt5 import QtGui, QtCore, QtWidgets
 
 from configuration import Configuration
@@ -26,15 +28,30 @@ class tspView(QtWidgets.QWidget):
         self.scale = 1
         self.running = False
 
+        self.cityPen = QtGui.QPen(QtGui.QColor("black"))
+        self.cityPen.setWidth(1)
+        self.tourPen = QtGui.QPen(QtGui.QColor("black"))
+        self.updatePen()
+        c = QtGui.QColor("black")
+        c.setAlphaF(0.2)
+        self.concordePen = QtGui.QPen(c)
+
+        self.cityBrush = QtGui.QColor("black")
+        self.cityBrush.setAlphaF(0.8)
+
         self.randInit()
 
     def restart(self):
         self.randInit()
         self.run(True)
 
+    def updatePen(self):
+        self.tourPen.setWidth(self.scale/sqrt(self.N)/30)
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.scale = min(self.size().height(), self.size().width())
+        self.updatePen()
 
     def paintEvent(self, event):
         p = QtGui.QPainter()
@@ -45,30 +62,19 @@ class tspView(QtWidgets.QWidget):
         p.end()
 
     def drawCities(self, p):
-        s = self.N*3/2
-        transparent = QtGui.QColor("black")
-        transparent.setAlphaF(0.8)
+        s = 1/sqrt(self.N)/15
 
-        pen = QtGui.QPen(QtGui.QColor("black"))
-        pen.setWidth(1)
-        p.setPen(pen)
-        p.setBrush(transparent)
+        p.setPen(self.cityPen)
+        p.setBrush(self.cityBrush)
         for x, y in self.conf.getCities():
             x *= self.scale
             y *= self.scale
-            p.drawEllipse(QtCore.QPoint(x, y), self.scale/s, self.scale/s)
+            p.drawEllipse(QtCore.QPoint(x, y), self.scale*s, self.scale*s)
 
     def drawWays(self, p):
-        s = self.scale/self.N/2
-        pen = QtGui.QPen(QtGui.QColor("black"))
-        pen.setWidth(s)
-        c = QtGui.QColor("black")
-
         if self.conf.doConcorde:
             # draw optimal
-            c.setAlphaF(0.2)
-            pen.setColor(c)
-            p.setPen(pen)
+            p.setPen(self.concordePen)
             for a, b in self.conf.concordeCoordinates():
                 x1, y1 = a
                 x2, y2 = b
@@ -79,9 +85,7 @@ class tspView(QtWidgets.QWidget):
                 p.drawLine(x1, y1, x2, y2)
 
         # draw heuristic
-        c.setAlphaF(1)
-        pen.setColor(c)
-        p.setPen(pen)
+        p.setPen(self.tourPen)
         for a, b in self.conf.getWayCoordinates():
             x1, y1 = a
             x2, y2 = b
@@ -93,6 +97,7 @@ class tspView(QtWidgets.QWidget):
 
     def setN(self, N):
         self.N = N
+        self.updatePen()
 
     def step(self):
         if self.conf.finishedFirst and (not self.conf.do2Opt or self.conf.finished2Opt):

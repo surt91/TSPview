@@ -298,6 +298,7 @@ class Configuration:
 
     def clearSolution(self):
         self.__ways = []
+        self.__n2Opt = 0
         self.finishedFirst = False
         self.finished2Opt = False
         self.initMethod()
