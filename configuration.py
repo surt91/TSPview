@@ -261,8 +261,6 @@ class Configuration:
         self.doConcorde = b
         if b:
             self.concorde()
-        else:
-            self.__concordeWays = []
         self.update()
 
     def clearSolution(self):
@@ -289,6 +287,10 @@ class Configuration:
         raise NotImplementedError
 
     def concorde(self):
+        if self.__concordeWays:
+            # we already have the optimum
+            return
+
         name = "%06d" % randint(0, 10**6)
         self.saveTSPLIB(name)
         call(["./concorde", "-x", "-v", name])

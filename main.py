@@ -36,7 +36,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.spinBoxDelay.valueChanged.connect(self.ui.view.setTimestep)
 
         self.ui.checkBox2Opt.toggled.connect(self.ui.view.conf.setDo2Opt)
-        self.ui.checkBoxConcorde.toggled.connect(self.ui.view.conf.setDoConcorde)
+        self.ui.checkBoxConcorde.toggled.connect(self.ui.view.setDoConcorde)
 
         self.ui.view.lenChanged.connect(self.ui.labelLen.setText)
         self.ui.view.twoOptChanged.connect(self.ui.label2Opt.setText)

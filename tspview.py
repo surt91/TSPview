@@ -2,7 +2,7 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 
 from configuration import Configuration
 
-
+# TODO: let tspView inherit from Configuration -> calling super()
 class tspView(QtWidgets.QWidget):
     lenChanged = QtCore.pyqtSignal(str)
     twoOptChanged = QtCore.pyqtSignal(str)
@@ -62,20 +62,21 @@ class tspView(QtWidgets.QWidget):
         s = self.scale/self.N/2
         pen = QtGui.QPen(QtGui.QColor("black"))
         pen.setWidth(s)
-
-        # draw optimal
         c = QtGui.QColor("black")
-        c.setAlphaF(0.2)
-        pen.setColor(c)
-        p.setPen(pen)
-        for a, b in self.conf.concordeCoordinates():
-            x1, y1 = a
-            x2, y2 = b
-            x1 *= self.scale
-            x2 *= self.scale
-            y1 *= self.scale
-            y2 *= self.scale
-            p.drawLine(x1, y1, x2, y2)
+
+        if self.conf.doConcorde:
+            # draw optimal
+            c.setAlphaF(0.2)
+            pen.setColor(c)
+            p.setPen(pen)
+            for a, b in self.conf.concordeCoordinates():
+                x1, y1 = a
+                x2, y2 = b
+                x1 *= self.scale
+                x2 *= self.scale
+                y1 *= self.scale
+                y2 *= self.scale
+                p.drawLine(x1, y1, x2, y2)
 
         # draw heuristic
         c.setAlphaF(1)
@@ -104,16 +105,12 @@ class tspView(QtWidgets.QWidget):
             self.update()
             self.lenChanged.emit("%.4f" % self.conf.length())
             self.twoOptChanged.emit("%d" % self.conf.n2Opt())
-            if self.conf.doConcorde:
-                gap = "%.2f%%" % ((self.conf.length()/self.conf.optimalLength()-1)*100)
-            else:
-                gap = "n/a"
-            self.gapChanged.emit(gap)
+            self.updateOptimum()
             return False
 
     def finish(self):
         while not self.step():
-            pass
+            self.repaint()
 
     def run(self, b=True):
         self.running = b
@@ -130,8 +127,18 @@ class tspView(QtWidgets.QWidget):
 
     def randInit(self):
         self.conf.randomInit(self.N)
+        self.updateOptimum()
+        self.update()
+
+    def setDoConcorde(self, b):
+        self.conf.setDoConcorde(b)
+        self.updateOptimum()
+
+    def updateOptimum(self):
         if self.conf.doConcorde:
             self.optimumChanged.emit("%.4f" % self.conf.optimalLength())
+            gap = "%.2f%%" % ((self.conf.length()/self.conf.optimalLength()-1)*100)
         else:
             self.optimumChanged.emit("n/a")
-        self.update()
+            gap = "n/a"
+        self.gapChanged.emit(gap)
