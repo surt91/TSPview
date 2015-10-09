@@ -1,11 +1,19 @@
-from math import sqrt
+from math import sqrt, pi, sin , cos
 import os
-from random import random, randint
+from random import random, randint, shuffle
 from subprocess import call
 
 
 def dist(a: tuple, b: tuple):
     return sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2)
+
+
+def argmax(iterable):
+    return max(enumerate(iterable), key=lambda x: x[1])
+
+
+def argmin(iterable):
+    return min(enumerate(iterable), key=lambda x: x[1])
 
 
 def tourFromWays(ways_in):
@@ -29,84 +37,67 @@ def tourFromWays(ways_in):
 
 
 def nextNeighborFactory(cities, ways):
-    def f():
-        if len(cities) <= 1:
-            raise ValueError
+    if len(cities) <= 1:
+        raise ValueError
 
-        candidates = set(range(1, len(cities)))
-        tour = [0]
-        nextIdx = 1
-        best = -1
+    candidates = list(range(1, len(cities)))
+    tour = [0]
 
-        while candidates:
-            for i in candidates:
-                d = dist(cities[i], cities[tour[-1]])
-                if d < best or best < 0:
-                    best = d
-                    nextIdx = i
+    while candidates:
+        nextIdx = candidates[argmin(dist(cities[i], cities[tour[-1]]) for i in candidates)[0]]
 
-            best = -1
-            candidates.remove(nextIdx)
-            yield (), ((tour[-1], nextIdx), )
-            tour.append(nextIdx)
+        candidates.remove(nextIdx)
+        yield (), ((tour[-1], nextIdx), )
+        tour.append(nextIdx)
 
-        yield (), ((tour[-1], tour[0]), )
-
-    return f()
+    yield (), ((tour[-1], tour[0]), )
 
 
 def greedyFactory(cities, ways):
-    def f():
-        raise NotImplementedError
-        yield nextEdge
-
-    return f()
+    raise NotImplementedError
+    yield nextEdge
 
 
 def farInFactory(cities, ways):
-    def f():
-        candidates = set(range(1, len(cities)))
-        tour = [0]
+    candidates = set(range(1, len(cities)))
+    tour = [0]
 
+    best = -1
+    while candidates:
+        # find farthest node
+        for i in candidates:
+            d = min(dist(cities[i], cities[j]) for j in tour)
+            if d > best or best < 0:
+                best = d
+                city = i
+        candidates.remove(city)
         best = -1
-        while candidates:
-            # find farthest node
-            for i in candidates:
-                d = min(dist(cities[i], cities[j]) for j in tour)
-                if d > best or best < 0:
-                    best = d
-                    city = i
-            candidates.remove(city)
-            best = -1
 
-            if len(tour) == 1:
-                tour.append(city)
-                yield (), ((tour[0], city), (tour[0], city))
-                continue
+        if len(tour) == 1:
+            tour.append(city)
+            yield (), ((tour[0], city), (tour[0], city))
+            continue
 
-            for i in range(len(tour)):
-                next = i+1
-                if next == len(tour):
-                    next = 0
-                d = dist(cities[city], cities[tour[i]]) + dist(cities[city], cities[tour[next]]) - dist(cities[tour[i]], cities[tour[next]])
+        for i in range(len(tour)):
+            next = (i+1) % len(tour)
 
-                if d < best or best < 0:
-                    best = d
-                    minIdx = next
+            d = dist(cities[city], cities[tour[i]]) + dist(cities[city], cities[tour[next]]) - dist(cities[tour[i]], cities[tour[next]])
 
-            yield ((tour[minIdx], tour[minIdx-1]), ), ((city, tour[minIdx]), (city, tour[minIdx-1]))
-            tour.insert(minIdx, city)
-            best = -1
+            if d < best or best < 0:
+                best = d
+                minIdx = next
 
-    return f()
+        yield ((tour[minIdx], tour[minIdx-1]), ), ((city, tour[minIdx]), (city, tour[minIdx-1]))
+        tour.insert(minIdx, city)
+        best = -1
 
 
 def randomFactory(cities, ways):
-    def f():
-        raise NotImplementedError
-        yield nextEdge
-
-    return f()
+    tour = list(range(len(cities)))
+    shuffle(tour)
+    for i in range(1, len(tour)):
+        yield (tour[i-1], tour[i])
+    yield (tour[-1], tour[0])
 
 
 def twoOptFactory(t, d):
@@ -125,13 +116,11 @@ def twoOptFactory(t, d):
 
         return True, (), ()
 
-    def f():
-        finished = False
-        while not finished:
-            finished, toRemove, toAdd = swap()
-            yield toRemove, toAdd
+    finished = False
+    while not finished:
+        finished, toRemove, toAdd = swap()
+        yield toRemove, toAdd
 
-    return f()
 
 
 class Configuration:
@@ -148,6 +137,7 @@ class Configuration:
         self.currentMethod = "Next Neighbor"
         self.__n2Opt = 0
         self.update = updateCallback
+        self.sigma = 0
 
     def init(self):
         self.__ways = []
@@ -163,6 +153,18 @@ class Configuration:
 
     def randomInit(self, N: int):
         self.__cities = tuple((random(), random()) for _ in range(N))
+        self.init()
+
+    def displace(self, city):
+        r = random() * self.sigma
+        phi = random() * 2 * pi
+        dx = r * cos(phi)
+        dy = r * sin(phi)
+
+        return city[0] + dx, city[1] + dy
+
+    def DCEInit(self, N: int):
+        self.__cities = tuple(self.displace((0.5 + 0.25 * cos(2*pi/N*i), 0.5 + 0.25 * sin(2*pi/N*i))) for i in range(N))
         self.init()
 
     def calcDistanceMatrix(self):
@@ -213,7 +215,7 @@ class Configuration:
 
         if not self.currentMethod == method:
             self.currentMethod = method
-            self.init()
+            self.__ways = []
 
     def step(self):
         if not self.finishedFirst:
@@ -254,6 +256,9 @@ class Configuration:
     def n2Opt(self):
         return self.__n2Opt
 
+    def setSigma(self, s):
+        self.sigma = s / 2 / len(self.__cities) * pi
+
     def setDo2Opt(self, b):
         self.do2Opt = b
 
@@ -267,6 +272,7 @@ class Configuration:
         self.__ways = []
         self.finishedFirst = False
         self.finished2Opt = False
+        self.initMethod()
         self.update()
 
     def saveTSPLIB(self, name):
@@ -304,4 +310,4 @@ class Configuration:
         for i in tour[1:]:
             self.__concordeWays.append((prev, i))
             prev = i
-        self.__concordeWays.append((i, tour[0]))
+        self.__concordeWays.append((tour[-1], tour[0]))

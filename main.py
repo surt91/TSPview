@@ -29,11 +29,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButtonStep.clicked.connect(self.ui.view.step)
         self.ui.pushButtonRun.toggled.connect(self.ui.view.run)
         self.ui.pushButtonRandInit.clicked.connect(self.ui.view.randInit)
+        self.ui.pushButtonDCE.clicked.connect(self.ui.view.dceInit)
         self.ui.pushButtonClear.clicked.connect(self.ui.view.conf.clearSolution)
         self.ui.pushButtonFinish.clicked.connect(self.ui.view.finish)
 
         self.ui.spinBoxN.valueChanged.connect(self.ui.view.setN)
         self.ui.spinBoxDelay.valueChanged.connect(self.ui.view.setTimestep)
+        self.ui.spinBoxSigma.valueChanged.connect(self.ui.view.conf.setSigma)
 
         self.ui.checkBox2Opt.toggled.connect(self.ui.view.conf.setDo2Opt)
         self.ui.checkBoxConcorde.toggled.connect(self.ui.view.setDoConcorde)

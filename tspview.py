@@ -130,6 +130,11 @@ class tspView(QtWidgets.QWidget):
         self.updateOptimum()
         self.update()
 
+    def dceInit(self):
+        self.conf.DCEInit(self.N)
+        self.updateOptimum()
+        self.update()
+
     def setDoConcorde(self, b):
         self.conf.setDoConcorde(b)
         self.updateOptimum()
