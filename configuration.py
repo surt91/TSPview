@@ -100,13 +100,13 @@ class Configuration:
 
     def changeMethod(self, method: str):
         if method == "Next Neighbor":
-            self.__heuristic = nextNeighborFactory(self.__cities, self.getWays())
+            self.__heuristic = nextNeighborGenerator(self.__cities, self.getWays())
         elif method == "Greedy":
-            self.__heuristic = greedyFactory(self.__cities, self.getWays())
+            self.__heuristic = greedyGenerator(self.__cities, self.getWays())
         elif method == "Farthest Insertion":
-            self.__heuristic = farInFactory(self.__cities, self.getWays())
+            self.__heuristic = farInGenerator(self.__cities, self.getWays())
         elif method == "Random":
-            self.__heuristic = randomFactory(self.__cities, self.getWays())
+            self.__heuristic = randomGenerator(self.__cities, self.getWays())
         else:
             raise ValueError
 
@@ -124,7 +124,7 @@ class Configuration:
                     self.addWay(i)
             except StopIteration:
                 self.finishedFirst = True
-                self.__twoOpt = twoOptFactory(tourFromWays(self.__ways), self.__distanceMatrix)
+                self.__twoOpt = twoOptGenerator(tourFromWays(self.__ways), self.__distanceMatrix)
                 pass
 
         elif self.do2Opt and not self.finished2Opt:

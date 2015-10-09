@@ -37,7 +37,7 @@ def tourFromWays(ways_in):
     return tour
 
 
-def nextNeighborFactory(cities, ways):
+def nextNeighborGenerator(cities, ways):
     if len(cities) <= 1:
         raise ValueError
 
@@ -54,7 +54,7 @@ def nextNeighborFactory(cities, ways):
     yield (), ((tour[-1], tour[0]),)
 
 
-def greedyFactory(cities, ways):
+def greedyGenerator(cities, ways):
     heap = [(dist(cities[i], cities[j]), (i, j)) for i in range(len(cities)) for j in range(i)]
     heapq.heapify(heap)
 
@@ -85,7 +85,7 @@ def greedyFactory(cities, ways):
     yield (), ((c1, c2),)
 
 
-def farInFactory(cities, ways):
+def farInGenerator(cities, ways):
     candidates = set(range(1, len(cities)))
     tour = [0]
 
@@ -121,7 +121,7 @@ def farInFactory(cities, ways):
         best = -1
 
 
-def randomFactory(cities, ways):
+def randomGenerator(cities, ways):
     tour = list(range(len(cities)))
     shuffle(tour)
     for i in range(1, len(tour)):
@@ -129,7 +129,7 @@ def randomFactory(cities, ways):
     yield (), ((tour[-1], tour[0]),)
 
 
-def twoOptFactory(t, d):
+def twoOptGenerator(t, d):
     def swap():
         n = len(t)
         for i in range(n):
