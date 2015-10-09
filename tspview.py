@@ -96,6 +96,8 @@ class tspView(QtWidgets.QWidget):
             p.drawLine(x1, y1, x2, y2)
 
     def setN(self, N):
+        if N < 3:
+            return
         self.N = N
         self.updatePen()
 
