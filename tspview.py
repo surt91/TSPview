@@ -28,6 +28,8 @@ class tspView(QtWidgets.QWidget):
         self.scale = 1
         self.running = False
 
+        self.currentEnsemble = "square"
+
         self.cityPen = QtGui.QPen(QtGui.QColor("black"))
         self.cityPen.setWidth(1)
         self.tourPen = QtGui.QPen(QtGui.QColor("black"))
@@ -42,7 +44,12 @@ class tspView(QtWidgets.QWidget):
         self.randInit()
 
     def restart(self):
-        self.randInit()
+        if self.currentEnsemble == "square":
+            self.randInit()
+        elif self.currentEnsemble == "dce":
+            self.dceInit()
+        else:
+            raise
         self.run(True)
 
     def updatePen(self):
@@ -105,7 +112,8 @@ class tspView(QtWidgets.QWidget):
         if self.conf.finishedFirst and (not self.conf.do2Opt or self.conf.finished2Opt):
             if self.running:
                 self.run(False)
-                self.restartTimer.start(self.timestep * 15)
+                #self.restartTimer.start(self.timestep * 15)
+                self.restartTimer.start(10 * 1000)
             return True
         else:
             self.conf.step()
@@ -133,11 +141,13 @@ class tspView(QtWidgets.QWidget):
         self.run(True)
 
     def randInit(self):
+        self.currentEnsemble = "square"
         self.conf.randomInit(self.N)
         self.updateOptimum()
         self.update()
 
     def dceInit(self):
+        self.currentEnsemble = "dce"
         self.conf.DCEInit(self.N)
         self.updateOptimum()
         self.update()
