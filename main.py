@@ -29,15 +29,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButtonStep.clicked.connect(self.ui.view.step)
         self.ui.pushButtonRun.toggled.connect(self.ui.view.run)
         self.ui.pushButtonRandInit.clicked.connect(self.ui.view.randInit)
-        self.ui.pushButtonDCE.clicked.connect(self.ui.view.dceInit)
-        self.ui.pushButtonClear.clicked.connect(self.ui.view.conf.clearSolution)
+        self.ui.pushButtonDCE.clicked.connect(self.ui.view.DCEInit)
+        self.ui.pushButtonClear.clicked.connect(self.ui.view.clearSolution)
         self.ui.pushButtonFinish.clicked.connect(self.ui.view.finish)
 
         self.ui.spinBoxN.valueChanged.connect(self.ui.view.setN)
         self.ui.spinBoxDelay.valueChanged.connect(self.ui.view.setTimestep)
-        self.ui.spinBoxSigma.valueChanged.connect(self.ui.view.conf.setSigma)
+        self.ui.spinBoxSigma.valueChanged.connect(self.ui.view.setSigma)
 
-        self.ui.checkBox2Opt.toggled.connect(self.ui.view.conf.setDo2Opt)
+        self.ui.checkBox2Opt.toggled.connect(self.ui.view.setDo2Opt)
         self.ui.checkBoxConcorde.toggled.connect(self.ui.view.setDoConcorde)
 
         self.ui.view.lenChanged.connect(self.ui.labelLen.setText)
@@ -49,7 +49,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ui.checkBoxConcorde.setEnabled(True)
 
     def changeMethod(self):
-        self.ui.view.conf.changeMethod(str(self.ui.comboMethod.currentText()))
+        self.ui.view.changeMethod(str(self.ui.comboMethod.currentText()))
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

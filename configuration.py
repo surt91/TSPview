@@ -1,4 +1,4 @@
-from math import sqrt, pi, sin , cos
+from math import sqrt, pi, sin, cos
 import os
 from random import random, randint, shuffle
 from subprocess import call
@@ -8,7 +8,7 @@ from unionfind import UnionFindWrapper
 
 
 def dist(a: tuple, b: tuple):
-    return sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2)
+    return sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
 
 
 def argmax(iterable):
@@ -50,10 +50,10 @@ def nextNeighborFactory(cities, ways):
         nextIdx = candidates[argmin(dist(cities[i], cities[tour[-1]]) for i in candidates)[0]]
 
         candidates.remove(nextIdx)
-        yield (), ((tour[-1], nextIdx), )
+        yield (), ((tour[-1], nextIdx),)
         tour.append(nextIdx)
 
-    yield (), ((tour[-1], tour[0]), )
+    yield (), ((tour[-1], tour[0]),)
 
 
 def greedyFactory(cities, ways):
@@ -108,15 +108,17 @@ def farInFactory(cities, ways):
             continue
 
         for i in range(len(tour)):
-            next = (i+1) % len(tour)
+            n = (i + 1) % len(tour)
 
-            d = dist(cities[city], cities[tour[i]]) + dist(cities[city], cities[tour[next]]) - dist(cities[tour[i]], cities[tour[next]])
+            d = dist(cities[city], cities[tour[i]]) \
+                + dist(cities[city], cities[tour[n]]) \
+                - dist(cities[tour[i]], cities[tour[n]])
 
             if d < best or best < 0:
                 best = d
-                minIdx = next
+                minIdx = n
 
-        yield ((tour[minIdx], tour[minIdx-1]), ), ((city, tour[minIdx]), (city, tour[minIdx-1]))
+        yield ((tour[minIdx], tour[minIdx - 1]),), ((city, tour[minIdx]), (city, tour[minIdx - 1]))
         tour.insert(minIdx, city)
         best = -1
 
@@ -125,7 +127,7 @@ def randomFactory(cities, ways):
     tour = list(range(len(cities)))
     shuffle(tour)
     for i in range(1, len(tour)):
-        yield (), ((tour[i-1], tour[i]),)
+        yield (), ((tour[i - 1], tour[i]),)
     yield (), ((tour[-1], tour[0]),)
 
 
@@ -133,15 +135,15 @@ def twoOptFactory(t, d):
     def swap():
         n = len(t)
         for i in range(n):
-            for j in range(i+1, n):
+            for j in range(i + 1, n):
 
                 # if sum(neueKanten) < sum(alteKanten)
-                if d[t[i]][t[j]] + d[t[i+1]][t[(j+1)%n]] < d[t[i]][t[i+1]] + d[t[j]][t[(j+1)%n]]:
+                if d[t[i]][t[j]] + d[t[i + 1]][t[(j + 1) % n]] < d[t[i]][t[i + 1]] + d[t[j]][t[(j + 1) % n]]:
                     # tausche die Reihenfolge von j bis i+1 um
-                    ct = j-i
-                    for m in range(ct//2):
-                        t[i+ct-m], t[i+1+m] = t[i+1+m], t[i+ct-m]
-                    return False, ((t[i], t[j]), (t[i+1], t[(j+1)%n])), ((t[i], t[i+1]), (t[j], t[j+1]))
+                    ct = j - i
+                    for m in range(ct // 2):
+                        t[i + ct - m], t[i + 1 + m] = t[i + 1 + m], t[i + ct - m]
+                    return False, ((t[i], t[j]), (t[i + 1], t[(j + 1) % n])), ((t[i], t[i + 1]), (t[j], t[j + 1]))
 
         return True, (), ()
 
@@ -152,11 +154,12 @@ def twoOptFactory(t, d):
 
 
 class Configuration:
-    def __init__(self, x: list=(), y: list=(), updateCallback=None):
+    def __init__(self, x: list = (), y: list = ()):
         self.__cities = tuple(zip(x, y))
         self.__ways = []
         self.__concordeWays = []
         self.__distanceMatrix = self.calcDistanceMatrix()
+        self.__heuristic = None
         self.__twoOpt = None
         self.finishedFirst = True
         self.finished2Opt = True
@@ -164,8 +167,8 @@ class Configuration:
         self.doConcorde = False
         self.currentMethod = "Next Neighbor"
         self.__n2Opt = 0
-        self.update = updateCallback
         self.sigma = 0
+        self.N = 42
 
     def init(self):
         self.__ways = []
@@ -179,8 +182,8 @@ class Configuration:
         if self.doConcorde:
             self.concorde()
 
-    def randomInit(self, N: int):
-        self.__cities = tuple((random(), random()) for _ in range(N))
+    def randInit(self):
+        self.__cities = tuple((random(), random()) for _ in range(self.N))
         self.init()
 
     def displace(self, city):
@@ -191,8 +194,10 @@ class Configuration:
 
         return city[0] + dx, city[1] + dy
 
-    def DCEInit(self, N: int):
-        self.__cities = tuple(self.displace((0.5 + 0.25 * cos(2*pi/N*i), 0.5 + 0.25 * sin(2*pi/N*i))) for i in range(N))
+    def DCEInit(self):
+        self.__cities = tuple(
+            self.displace((0.5 + 0.25 * cos(2 * pi / self.N * i), 0.5 + 0.25 * sin(2 * pi / self.N * i))) for i in
+            range(self.N))
         self.init()
 
     def calcDistanceMatrix(self):
@@ -284,6 +289,11 @@ class Configuration:
     def n2Opt(self):
         return self.__n2Opt
 
+    def setN(self, N):
+        if N < 3:
+            return
+        self.N = N
+
     def setSigma(self, s):
         self.sigma = s / 2 / len(self.__cities) * pi
 
@@ -294,7 +304,6 @@ class Configuration:
         self.doConcorde = b
         if b:
             self.concorde()
-        self.update()
 
     def clearSolution(self):
         self.__ways = []
@@ -302,10 +311,9 @@ class Configuration:
         self.finishedFirst = False
         self.finished2Opt = False
         self.initMethod()
-        self.update()
 
     def saveTSPLIB(self, name):
-        tsplib  = "COMMENT : Random Euclidian (Schawe)\n"
+        tsplib = "COMMENT : Random Euclidian (Schawe)\n"
         tsplib += "TYPE : TSP\n"
         tsplib += "DIMENSION : {}\n".format(len(self.__cities))
         tsplib += "EDGE_WEIGHT_TYPE : EUC_2D\n"
@@ -313,7 +321,7 @@ class Configuration:
 
         for n, coord in enumerate(self.__cities):
             x, y = coord
-            tsplib += "{} {} {}\n".format(n, x*10**5, y*10**5)
+            tsplib += "{} {} {}\n".format(n, x * 10 ** 5, y * 10 ** 5)
 
         with open(name, "w") as f:
             f.write(tsplib)
@@ -326,14 +334,14 @@ class Configuration:
             # we already have the optimum
             return
 
-        name = "%06d" % randint(0, 10**6)
+        name = "%06d" % randint(0, 10 ** 6)
         self.saveTSPLIB(name)
         call(["./concorde", "-x", "-v", name])
-        with open(name+".sol") as f:
-            n = int(f.readline())
+        with open(name + ".sol") as f:
+            _ = int(f.readline())
             tour = [int(j) for i in f.readlines() for j in i.split()]
         os.remove(name)
-        os.remove(name+".sol")
+        os.remove(name + ".sol")
 
         prev = tour[0]
         for i in tour[1:]:
