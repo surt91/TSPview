@@ -2,6 +2,9 @@ from math import sqrt, pi, sin , cos
 import os
 from random import random, randint, shuffle
 from subprocess import call
+import heapq
+
+from unionfind import UnionFindWrapper
 
 
 def dist(a: tuple, b: tuple):
@@ -54,8 +57,34 @@ def nextNeighborFactory(cities, ways):
 
 
 def greedyFactory(cities, ways):
-    raise NotImplementedError
-    yield nextEdge
+    heap = [(dist(cities[i], cities[j]), (i, j)) for i in range(len(cities)) for j in range(i)]
+    heapq.heapify(heap)
+
+    uf = UnionFindWrapper(range(len(cities)))
+    num = [0 for _ in range(len(cities))]
+    ctr = 0
+    while heap:
+        d, edge = heapq.heappop(heap)
+        i, j = edge
+        if (uf.find(i) != uf.find(j)) and (num[i] <= 1 and num[j] <= 1):  # does not make a loop (except last)
+            num[i] += 1
+            num[j] += 1
+            uf.union(i, j)
+            yield (), ((i, j),)
+            ctr += 1
+            if ctr == len(cities) - 1:
+                break
+
+    c1 = len(cities)
+    c2 = len(cities)
+    for i, j in enumerate(num):
+        if j == 1 and not c1 < len(cities):
+            c1 = i
+        elif j == 1:
+            c2 = i
+            break
+
+    yield (), ((c1, c2),)
 
 
 def farInFactory(cities, ways):
@@ -96,8 +125,8 @@ def randomFactory(cities, ways):
     tour = list(range(len(cities)))
     shuffle(tour)
     for i in range(1, len(tour)):
-        yield (tour[i-1], tour[i])
-    yield (tour[-1], tour[0])
+        yield (), ((tour[i-1], tour[i]),)
+    yield (), ((tour[-1], tour[0]),)
 
 
 def twoOptFactory(t, d):
@@ -120,7 +149,6 @@ def twoOptFactory(t, d):
     while not finished:
         finished, toRemove, toAdd = swap()
         yield toRemove, toAdd
-
 
 
 class Configuration:
