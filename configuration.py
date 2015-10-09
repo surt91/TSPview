@@ -1,5 +1,7 @@
 from math import sqrt
-from random import random
+import os
+from random import random, randint
+from subprocess import call
 
 
 def dist(a: tuple, b: tuple):
@@ -133,23 +135,31 @@ def twoOptFactory(t, d):
 
 
 class Configuration:
-    def __init__(self, x: list=(), y: list=()):
+    def __init__(self, x: list=(), y: list=(), updateCallback=None):
         self.__cities = tuple(zip(x, y))
         self.__ways = []
+        self.__concordeWays = []
         self.__distanceMatrix = self.calcDistanceMatrix()
         self.__twoOpt = None
         self.finishedFirst = True
         self.finished2Opt = True
-        self.do2Opt = True
+        self.do2Opt = False
+        self.doConcorde = False
         self.currentMethod = "Next Neighbor"
+        self.__n2Opt = 0
+        self.update = updateCallback
 
     def init(self):
         self.__ways = []
+        self.__concordeWays = []
         self.__distanceMatrix = self.calcDistanceMatrix()
         self.initMethod()
         self.finishedFirst = False
         self.finished2Opt = False
         self.__n2Opt = 0
+
+        if self.doConcorde:
+            self.concorde()
 
     def randomInit(self, N: int):
         self.__cities = tuple((random(), random()) for _ in range(N))
@@ -166,6 +176,9 @@ class Configuration:
 
     def getWayCoordinates(self):
         return tuple((self.__cities[i], self.__cities[j]) for i, j in self.__ways)
+
+    def concordeCoordinates(self):
+        return tuple((self.__cities[i], self.__cities[j]) for i, j in self.__concordeWays)
 
     def valid(self, newWay):
         # raise NotImplementedError
@@ -232,8 +245,61 @@ class Configuration:
             l += dist(a, b)
         return l
 
+    def optimalLength(self):
+        l = 0
+        for a, b in self.concordeCoordinates():
+            l += dist(a, b)
+        return l
+
     def n2Opt(self):
         return self.__n2Opt
 
     def setDo2Opt(self, b):
         self.do2Opt = b
+
+    def setDoConcorde(self, b):
+        self.doConcorde = b
+        if b:
+            self.concorde()
+        else:
+            self.__concordeWays = []
+        self.update()
+
+    def clearSolution(self):
+        self.__ways = []
+        self.finishedFirst = False
+        self.finished2Opt = False
+        self.update()
+
+    def saveTSPLIB(self, name):
+        tsplib  = "COMMENT : Random Euclidian (Schawe)\n"
+        tsplib += "TYPE : TSP\n"
+        tsplib += "DIMENSION : {}\n".format(len(self.__cities))
+        tsplib += "EDGE_WEIGHT_TYPE : EUC_2D\n"
+        tsplib += "NODE_COORD_SECTION\n"
+
+        for n, coord in enumerate(self.__cities):
+            x, y = coord
+            tsplib += "{} {} {}\n".format(n, x*10**5, y*10**5)
+
+        with open(name, "w") as f:
+            f.write(tsplib)
+
+    def loadTSPLIB(self, name):
+        raise NotImplementedError
+
+    def concorde(self):
+        name = "%06d" % randint(0, 10**6)
+        self.saveTSPLIB(name)
+        call(["./concorde", "-x", "-v", name])
+        with open(name+".sol") as f:
+            n = int(f.readline())
+            tour = [int(j) for i in f.readlines() for j in i.split()]
+        os.remove(name)
+        os.remove(name+".sol")
+
+        prev = tour[0]
+        for i in tour[1:]:
+            self.__concordeWays.append((prev, i))
+            prev = i
+        self.__concordeWays.append((i, tour[0]))
