@@ -243,6 +243,7 @@ class Configuration:
 
     def clearSolution(self):
         self.__ways = []
+        self.adjMatrix = [0]*self.N**2
         self.__n2Opt = 0
         self.finishedFirst = False
         self.finished2Opt = False
