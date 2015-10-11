@@ -46,6 +46,9 @@ class tspView(QtWidgets.QWidget, Configuration):
         self.tourPen.setWidth(self.scale * self.correction / sqrt(self.N) / 30)
         self.tourPenIncomplete.setWidth(self.scale * self.correction / sqrt(self.N) / 30)
 
+        s = 1 / sqrt(self.N) / 15
+        self.pointsize = self.scale * self.correction * s
+
     def changeMethod(self, method: str):
         super().changeMethod(method)
         self.twoOptAvailable.emit(not self.lp)
@@ -57,26 +60,28 @@ class tspView(QtWidgets.QWidget, Configuration):
     def rescale(self):
         self.scale = min(self.size().height()/self.maxY, self.size().width()/self.maxX)
         self.correction = max(self.maxX, self.maxY)
+
         self.updatePen()
 
     def paintEvent(self, event):
         p = QtGui.QPainter()
         p.begin(self)
         p.setRenderHint(QtGui.QPainter.Antialiasing)
-        p.eraseRect(0, 0, self.scale, self.scale)
+        p.eraseRect(0, 0, self.scale*self.correction, self.scale*self.correction)
         self.drawWays(p)
         self.drawCities(p)
         p.end()
 
-    def drawCities(self, p):
-        s = 1 / sqrt(self.N) / 15
+    def addMargin(self, x):
+        return (x + 0.05*self.correction) * self.scale * 0.9
 
+    def drawCities(self, p):
         p.setPen(self.cityPen)
         p.setBrush(self.cityBrush)
         for x, y in self.getCities():
-            x *= self.scale
-            y *= self.scale
-            p.drawEllipse(QtCore.QPoint(x, y), self.scale * self.correction * s, self.scale * self.correction * s)
+            x = self.addMargin(x)
+            y = self.addMargin(y)
+            p.drawEllipse(QtCore.QPoint(x, y), self.pointsize, self.pointsize)
 
     def drawWays(self, p):
         if self.doConcorde:
@@ -106,10 +111,10 @@ class tspView(QtWidgets.QWidget, Configuration):
     def drawLine(self, p, a, b):
         x1, y1 = a
         x2, y2 = b
-        x1 *= self.scale
-        x2 *= self.scale
-        y1 *= self.scale
-        y2 *= self.scale
+        x1 = self.addMargin(x1)
+        x2 = self.addMargin(x2)
+        y1 = self.addMargin(y1)
+        y2 = self.addMargin(y2)
         p.drawLine(x1, y1, x2, y2)
 
     def step(self):
