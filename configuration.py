@@ -4,6 +4,10 @@ from random import random, randint
 from subprocess import call
 
 from heuristicgenerators import *
+try:
+    from lp.CplexTSPSolver import CplexTSPSolver
+except ImportError:
+    print("can not import LP solver")
 
 
 class Configuration:
@@ -24,6 +28,9 @@ class Configuration:
         self.sigma = 0
         self.N = 42
 
+        self.lp = False
+        self.adjMatrix = [0]*self.N**2
+
     def init(self):
         self.__ways = []
         self.__concordeWays = []
@@ -32,6 +39,7 @@ class Configuration:
         self.finishedFirst = False
         self.finished2Opt = False
         self.__n2Opt = 0
+        self.adjMatrix = [0]*self.N**2
 
         if self.doConcorde:
             self.concorde()
@@ -99,23 +107,35 @@ class Configuration:
         self.changeMethod(self.currentMethod)
 
     def changeMethod(self, method: str):
-        if method == "Next Neighbor":
-            self.__heuristic = nextNeighborGenerator(self.__cities, self.getWays())
-        elif method == "Greedy":
-            self.__heuristic = greedyGenerator(self.__cities, self.getWays())
-        elif method == "Farthest Insertion":
-            self.__heuristic = farInGenerator(self.__cities, self.getWays())
-        elif method == "Random":
-            self.__heuristic = randomGenerator(self.__cities, self.getWays())
+        if method == "LP & Cutting Planes":
+            self.__heuristic = self.cuttingPlanes()
+            self.lp = True
         else:
-            raise ValueError
+            self.lp = False
+
+            if method == "Next Neighbor":
+                self.__heuristic = nextNeighborGenerator(self.__cities, self.getWays())
+            elif method == "Greedy":
+                self.__heuristic = greedyGenerator(self.__cities, self.getWays())
+            elif method == "Farthest Insertion":
+                self.__heuristic = farInGenerator(self.__cities, self.getWays())
+            elif method == "Random":
+                self.__heuristic = randomGenerator(self.__cities, self.getWays())
+            else:
+                raise ValueError
 
         if not self.currentMethod == method:
             self.currentMethod = method
             self.__ways = []
 
     def step(self):
-        if not self.finishedFirst:
+        if self.lp and not self.finishedFirst:
+            try:
+                self.adjMatrix = next(self.__heuristic)
+            except StopIteration:
+                self.finishedFirst = True
+
+        elif not self.finishedFirst:
             try:
                 toRemove, toAdd = next(self.__heuristic)
                 for i in toRemove:
@@ -140,8 +160,14 @@ class Configuration:
 
     def length(self):
         l = 0
-        for a, b in self.getWayCoordinates():
-            l += dist(a, b)
+        if self.lp:
+            c = self.getCities()
+            for i in range(self.N):
+                for j in range(i):
+                    l += self.adjMatrix[i*self.N+j] * dist(c[i], c[j])
+        else:
+            for a, b in self.getWayCoordinates():
+                l += dist(a, b)
         return l
 
     def optimalLength(self):
@@ -212,3 +238,13 @@ class Configuration:
             self.__concordeWays.append((prev, i))
             prev = i
         self.__concordeWays.append((tour[-1], tour[0]))
+
+    def cuttingPlanes(self):
+        # flatten distance matrix
+        d = [i for j in self.__distanceMatrix for i in j]
+        c = CplexTSPSolver(self.N, d)
+        adjMatrix = c.nextRelaxation()
+        while adjMatrix:
+            yield adjMatrix
+            adjMatrix = c.nextRelaxation()
+

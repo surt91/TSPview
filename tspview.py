@@ -11,6 +11,7 @@ class tspView(QtWidgets.QWidget, Configuration):
     twoOptChanged = QtCore.pyqtSignal(str)
     gapChanged = QtCore.pyqtSignal(str)
     optimumChanged = QtCore.pyqtSignal(str)
+    twoOptAvailable = QtCore.pyqtSignal(bool)
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -29,6 +30,8 @@ class tspView(QtWidgets.QWidget, Configuration):
         self.cityPen = QtGui.QPen(QtGui.QColor("black"))
         self.cityPen.setWidth(1)
         self.tourPen = QtGui.QPen(QtGui.QColor("black"))
+        self.tourPenIncomplete = QtGui.QPen(QtGui.QColor("black"))
+        self.tourPenIncomplete.setStyle(QtCore.Qt.DashLine)
         self.updatePen()
         c = QtGui.QColor("black")
         c.setAlphaF(0.2)
@@ -41,6 +44,11 @@ class tspView(QtWidgets.QWidget, Configuration):
 
     def updatePen(self):
         self.tourPen.setWidth(self.scale / sqrt(self.N) / 30)
+        self.tourPenIncomplete.setWidth(self.scale / sqrt(self.N) / 30)
+
+    def changeMethod(self, method: str):
+        super().changeMethod(method)
+        self.twoOptAvailable.emit(not self.lp)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -51,6 +59,7 @@ class tspView(QtWidgets.QWidget, Configuration):
         p = QtGui.QPainter()
         p.begin(self)
         p.setRenderHint(QtGui.QPainter.Antialiasing)
+        p.eraseRect(0, 0, self.scale, self.scale)
         self.drawWays(p)
         self.drawCities(p)
         p.end()
@@ -70,28 +79,35 @@ class tspView(QtWidgets.QWidget, Configuration):
             # draw optimal
             p.setPen(self.concordePen)
             for a, b in self.concordeCoordinates():
-                x1, y1 = a
-                x2, y2 = b
-                x1 *= self.scale
-                x2 *= self.scale
-                y1 *= self.scale
-                y2 *= self.scale
-                p.drawLine(x1, y1, x2, y2)
+                self.drawLine(p, a, b)
 
-        # draw heuristic
         p.setPen(self.tourPen)
-        for a, b in self.getWayCoordinates():
-            x1, y1 = a
-            x2, y2 = b
-            x1 *= self.scale
-            x2 *= self.scale
-            y1 *= self.scale
-            y2 *= self.scale
-            p.drawLine(x1, y1, x2, y2)
+        # draw adjMatrix or ways?
+        if self.lp:
+            c = self.getCities()
+            for i in range(self.N):
+                for j in range(i):
+                    if self.adjMatrix[i*self.N+j] > 10e-5:
+                        if self.adjMatrix[i*self.N+j] < 1-10e-5:
+                            p.setPen(self.tourPenIncomplete)
+                        else:
+                            p.setPen(self.tourPen)
+                        self.drawLine(p, c[i], c[j])
 
-    def setN(self, N):
-        super().setN(N)
-        self.updatePen()
+        else:
+            # draw heuristic
+
+            for a, b in self.getWayCoordinates():
+                self.drawLine(p, a, b)
+
+    def drawLine(self, p, a, b):
+        x1, y1 = a
+        x2, y2 = b
+        x1 *= self.scale
+        x2 *= self.scale
+        y1 *= self.scale
+        y2 *= self.scale
+        p.drawLine(x1, y1, x2, y2)
 
     def step(self):
         if self.finishedFirst and (not self.do2Opt or self.finished2Opt):
@@ -133,6 +149,10 @@ class tspView(QtWidgets.QWidget, Configuration):
         super().clearSolution()
         self.update()
 
+    def init(self):
+        super().init()
+        self.updatePen()
+
     def randInit(self):
         super().randInit()
         self.updateOptimum()
@@ -156,3 +176,4 @@ class tspView(QtWidgets.QWidget, Configuration):
             self.optimumChanged.emit("n/a")
             gap = "n/a"
         self.gapChanged.emit(gap)
+

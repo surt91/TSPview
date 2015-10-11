@@ -7,6 +7,8 @@ import logging
 
 from PyQt5 import uic, QtGui, QtCore, QtWidgets
 
+# TODO: filter TSPLIB folder for Euclidean Instances with city coordinates
+
 
 class MainWindow(QtWidgets.QMainWindow):
     logging.info("Loading Ui: main window")
@@ -17,6 +19,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.ui = self.mainForm()
         self.init_ui()
+
+        self.testLP()
+        self.populateTSPLIB()
 
     def init_ui(self):
         self.ui.setupUi(self)
@@ -44,12 +49,27 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.view.twoOptChanged.connect(self.ui.label2Opt.setText)
         self.ui.view.optimumChanged.connect(self.ui.labelOpt.setText)
         self.ui.view.gapChanged.connect(self.ui.labelGap.setText)
+        self.ui.view.twoOptAvailable.connect(self.ui.checkBox2Opt.setEnabled)
 
         if os.path.exists("concorde"):
             self.ui.checkBoxConcorde.setEnabled(True)
 
     def changeMethod(self):
         self.ui.view.changeMethod(str(self.ui.comboMethod.currentText()))
+
+    def populateTSPLIB(self):
+        doable = []
+
+        if doable:
+            self.ui.comboTSPLIB.setEnabled(True)
+            self.ui.pushButtonTSPLIB.setEnabled(True)
+
+    def testLP(self):
+        try:
+            from lp.CplexTSPSolver import CplexTSPSolver
+        except ImportError:
+            self.ui.comboMethod.removeItem(4)
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
