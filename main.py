@@ -4,6 +4,7 @@
 import os
 import sys
 import logging
+import re
 
 from PyQt5 import uic, QtGui, QtCore, QtWidgets
 
@@ -19,6 +20,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.init_ui()
 
         self.testLP()
+        self.TSPLIBinstances = {}
         self.populateTSPLIB()
 
     def init_ui(self):
@@ -28,6 +30,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowIcon(QtGui.QIcon(os.path.join("img/icon.ico")))
 
         self.ui.comboMethod.activated.connect(self.changeMethod)
+        self.ui.comboTSPLIB.activated.connect(self.initTSPLIB)
 
         self.ui.pushButtonStep.clicked.connect(self.ui.view.step)
         self.ui.pushButtonRun.toggled.connect(self.ui.view.run)
@@ -35,7 +38,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButtonDCE.clicked.connect(self.ui.view.DCEInit)
         self.ui.pushButtonClear.clicked.connect(self.ui.view.clearSolution)
         self.ui.pushButtonFinish.clicked.connect(self.ui.view.finish)
-        self.ui.pushButtonTSPLIB.clicked.connect(self.initTSPLIB)
 
         self.ui.spinBoxN.valueChanged.connect(self.ui.view.setN)
         self.ui.spinBoxDelay.valueChanged.connect(self.ui.view.setTimestep)
@@ -49,6 +51,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.view.optimumChanged.connect(self.ui.labelOpt.setText)
         self.ui.view.gapChanged.connect(self.ui.labelGap.setText)
         self.ui.view.twoOptAvailable.connect(self.ui.checkBox2Opt.setEnabled)
+        self.ui.view.TSPLIBChange.connect(lambda x: self.ui.comboTSPLIB.setCurrentIndex(self.TSPLIBinstances[x]))
+        self.ui.view.TSPLIBChange.connect(lambda x: self.ui.spinBoxN.setValue(int(re.sub("[^0-9]", "", x))))
 
         if os.path.exists("concorde"):
             self.ui.checkBoxConcorde.setEnabled(True)
@@ -68,7 +72,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def populateTSPLIB(self):
         import gzip
-        import re
 
         doable = []
         # try:
@@ -98,12 +101,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if doable:
             self.ui.comboTSPLIB.setEnabled(True)
-            self.ui.pushButtonTSPLIB.setEnabled(True)
 
         doable.sort(key=lambda x: int(re.sub("[^0-9]", "", x)))
         for i in doable:
             i = i.replace(".tsp.gz", "")
             self.ui.comboTSPLIB.addItem(i)
+        self.TSPLIBinstances = {j: i for i, j in enumerate(doable)}
+
+        self.ui.view.setTSPLIB([os.path.join("TSPLIB", i) for i in doable])
 
     def initTSPLIB(self):
         self.ui.view.TSPLIBInit(os.path.join("TSPLIB", self.ui.comboTSPLIB.currentText()+".tsp.gz"))

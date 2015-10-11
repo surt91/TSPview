@@ -11,6 +11,7 @@ class tspView(QtWidgets.QWidget, Configuration):
     gapChanged = QtCore.pyqtSignal(str)
     optimumChanged = QtCore.pyqtSignal(str)
     twoOptAvailable = QtCore.pyqtSignal(bool)
+    TSPLIBChange = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -31,7 +32,7 @@ class tspView(QtWidgets.QWidget, Configuration):
         self.cityPen.setWidth(1)
         self.tourPen = QtGui.QPen(QtGui.QColor("black"))
         self.tourPenIncomplete = QtGui.QPen(QtGui.QColor("black"))
-        self.tourPenIncomplete.setStyle(QtCore.Qt.DashLine)
+        self.tourPenIncomplete.setStyle(QtCore.Qt.DotLine)
         self.updatePen()
         c = QtGui.QColor("black")
         c.setAlphaF(0.2)
@@ -173,6 +174,7 @@ class tspView(QtWidgets.QWidget, Configuration):
 
     def TSPLIBInit(self, file):
         super().TSPLIBInit(file)
+        self.TSPLIBChange.emit(self.currentFile.replace("TSPLIB/", ""))
         self.updateOptimum()
         self.update()
 

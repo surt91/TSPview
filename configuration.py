@@ -1,6 +1,6 @@
 from math import pi, sin, cos
 import os
-from random import random, randint
+from random import random, randint, choice
 from subprocess import call
 import gzip
 
@@ -25,6 +25,8 @@ class Configuration:
         self.doConcorde = False
         self.currentMethod = "Next Neighbor"
         self.currentEnsemble = "square"
+        self.currentFile = ""
+        self.TSPLIB = []
         self.__n2Opt = 0
         self.sigma = 0
         self.N = 42
@@ -52,11 +54,15 @@ class Configuration:
             self.randInit()
         elif self.currentEnsemble == "dce":
             self.DCEInit()
+        elif self.currentEnsemble == "tsplib":
+            self.currentFile = choice(self.TSPLIB)
+            self.TSPLIBInit(self.currentFile)
         else:
             raise
 
     def randInit(self):
         self.currentEnsemble = "square"
+        self.currentFile = ""
         self.maxX = 1
         self.maxY = 1
         self.__cities = tuple((random(), random()) for _ in range(self.N))
@@ -72,6 +78,7 @@ class Configuration:
 
     def DCEInit(self):
         self.currentEnsemble = "dce"
+        self.currentFile = ""
         self.maxX = 1
         self.maxY = 1
         self.__cities = tuple(
@@ -103,6 +110,7 @@ class Configuration:
 
     def TSPLIBInit(self, file):
         self.currentEnsemble = "tsplib"
+        self.currentFile = file
         self.__cities = self.getCitiesFromTSPLIB(file)
         self.maxX = max(self.__cities)[0]
         self.maxY = max(self.__cities, key=lambda x: x[1])[1]
@@ -240,18 +248,23 @@ class Configuration:
         self.initMethod()
 
     def saveTSPLIB(self, name):
-        tsplib = "COMMENT : Random Euclidian (Schawe)\n"
-        tsplib += "TYPE : TSP\n"
-        tsplib += "DIMENSION : {}\n".format(len(self.__cities))
-        tsplib += "EDGE_WEIGHT_TYPE : EUC_2D\n"
-        tsplib += "NODE_COORD_SECTION\n"
+        if self.currentFile:
+            with gzip.open(self.currentFile, "rt") as read:
+                with open(name, "w") as f:
+                    f.write(read.read())
+        else:
+            tsplib = "COMMENT : Random Euclidian (Schawe)\n"
+            tsplib += "TYPE : TSP\n"
+            tsplib += "DIMENSION : {}\n".format(len(self.__cities))
+            tsplib += "EDGE_WEIGHT_TYPE : EUC_2D\n"
+            tsplib += "NODE_COORD_SECTION\n"
 
-        for n, coord in enumerate(self.__cities):
-            x, y = coord
-            tsplib += "{} {} {}\n".format(n, x * 10 ** 5, y * 10 ** 5)
+            for n, coord in enumerate(self.__cities):
+                x, y = coord
+                tsplib += "{} {} {}\n".format(n, x * 10 ** 5, y * 10 ** 5)
 
-        with open(name, "w") as f:
-            f.write(tsplib)
+            with open(name, "w") as f:
+                f.write(tsplib)
 
     def loadTSPLIB(self, name):
         raise NotImplementedError
@@ -285,3 +298,5 @@ class Configuration:
             yield adjMatrix
             adjMatrix = c.nextRelaxation()
 
+    def setTSPLIB(self, tsplib):
+        self.TSPLIB = tsplib
