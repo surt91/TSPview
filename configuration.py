@@ -155,6 +155,7 @@ class Configuration:
         if method == "LP & Cutting Planes":
             self.__heuristic = self.cuttingPlanes()
             self.lp = True
+            self.do2Opt = False
         else:
             self.lp = False
 
