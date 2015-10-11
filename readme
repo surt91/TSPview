@@ -5,4 +5,6 @@ approximate the Travelling Salesperson Problem (TSP).
 Prequisites are:
     Python 3
     PyQt 5
-    Concorde (ptional)
+    Concorde (optional, for optimal tours)
+    boost::python (optional, for LP & Cutting Planes)
+    CPLEX (optional, for LP & Cutting Planes)

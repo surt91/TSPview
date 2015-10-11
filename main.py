@@ -7,8 +7,6 @@ import logging
 
 from PyQt5 import uic, QtGui, QtCore, QtWidgets
 
-# TODO: filter TSPLIB folder for Euclidean Instances with city coordinates
-
 
 class MainWindow(QtWidgets.QMainWindow):
     logging.info("Loading Ui: main window")
@@ -37,6 +35,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButtonDCE.clicked.connect(self.ui.view.DCEInit)
         self.ui.pushButtonClear.clicked.connect(self.ui.view.clearSolution)
         self.ui.pushButtonFinish.clicked.connect(self.ui.view.finish)
+        self.ui.pushButtonTSPLIB.clicked.connect(self.initTSPLIB)
 
         self.ui.spinBoxN.valueChanged.connect(self.ui.view.setN)
         self.ui.spinBoxDelay.valueChanged.connect(self.ui.view.setTimestep)
@@ -57,12 +56,57 @@ class MainWindow(QtWidgets.QMainWindow):
     def changeMethod(self):
         self.ui.view.changeMethod(str(self.ui.comboMethod.currentText()))
 
+    def getTSPLIB(self):
+        from urllib import request
+        request.urlretrieve(
+            "http://www.iwr.uni-heidelberg.de/groups/comopt/software/TSPLIB95/tsp/ALL_tsp.tar.gz", "ALL_tsp.tar.gz")
+
+        os.makedirs("TSPLIB", exist_ok=True)
+        import tarfile
+        tfile = tarfile.open("ALL_tsp.tar.gz", 'r:gz')
+        tfile.extractall('TSPLIB')
+
     def populateTSPLIB(self):
+        import gzip
+        import re
+
         doable = []
+        # try:
+        if not os.path.exists("TSPLIB"):
+            self.getTSPLIB()
+        # except:
+        #     return
+
+        for name in os.listdir("TSPLIB"):
+            euclidean = False
+            nodecoords = False
+            displayable = False
+            # do only take instances smaller than 500
+            if ".tsp.gz" in name and int(re.sub("[^0-9]", "", name)) < 500:
+                with gzip.open(os.path.join("TSPLIB", name), "rt") as f:
+                    for i in f.readlines():
+                        if "EUC_2D" in i:
+                            euclidean = True
+                        if "NODE_COORD_SECTION" in i:
+                            nodecoords = True
+                            break
+                        if "DISPLAY_DATA_SECTION" in i:
+                            displayable = True
+                            break
+                if euclidean and nodecoords or displayable:  # make all displayable available, though their solutions will deviate
+                    doable.append(name)
 
         if doable:
             self.ui.comboTSPLIB.setEnabled(True)
             self.ui.pushButtonTSPLIB.setEnabled(True)
+
+        doable.sort(key=lambda x: int(re.sub("[^0-9]", "", x)))
+        for i in doable:
+            i = i.replace(".tsp.gz", "")
+            self.ui.comboTSPLIB.addItem(i)
+
+    def initTSPLIB(self):
+        self.ui.view.TSPLIBInit(os.path.join("TSPLIB", self.ui.comboTSPLIB.currentText()+".tsp.gz"))
 
     def testLP(self):
         try:

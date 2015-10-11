@@ -2,6 +2,7 @@ from math import pi, sin, cos
 import os
 from random import random, randint
 from subprocess import call
+import gzip
 
 from heuristicgenerators import *
 try:
@@ -27,6 +28,8 @@ class Configuration:
         self.__n2Opt = 0
         self.sigma = 0
         self.N = 42
+        self.maxX = 1
+        self.maxY = 1
 
         self.lp = False
         self.adjMatrix = [0]*self.N**2
@@ -54,6 +57,8 @@ class Configuration:
 
     def randInit(self):
         self.currentEnsemble = "square"
+        self.maxX = 1
+        self.maxY = 1
         self.__cities = tuple((random(), random()) for _ in range(self.N))
         self.init()
 
@@ -67,9 +72,41 @@ class Configuration:
 
     def DCEInit(self):
         self.currentEnsemble = "dce"
+        self.maxX = 1
+        self.maxY = 1
         self.__cities = tuple(
             self.displace((0.5 + 0.25 * cos(2 * pi / self.N * i), 0.5 + 0.25 * sin(2 * pi / self.N * i))) for i in
             range(self.N))
+        self.init()
+
+    def getCitiesFromTSPLIB(self, file):
+        tmp = []
+        started = False
+        with gzip.open(file, "rt") as f:
+            for i in f.readlines():
+                if "NODE_COORD_SECTION" in i or "DISPLAY_DATA_SECTION" in i:
+                    started = True
+                    continue
+                if not started:
+                    continue
+                if "EOF" in i:
+                    break
+
+                n, x, y = i.split()
+                tmp.append((float(x), float(y)))
+        return self.adjust_cities(tmp)
+
+    def adjust_cities(self, cities):
+        minX = min(cities)[0]
+        maxY = max(cities, key=lambda x: x[1])[1]  # y-axis in Qt and TSPLIB are in different directions
+        return tuple((x-minX, maxY-y) for x, y in cities)
+
+    def TSPLIBInit(self, file):
+        self.currentEnsemble = "tsplib"
+        self.__cities = self.getCitiesFromTSPLIB(file)
+        self.maxX = max(self.__cities)[0]
+        self.maxY = max(self.__cities, key=lambda x: x[1])[1]
+        self.N = len(self.__cities)
         self.init()
 
     def calcDistanceMatrix(self):

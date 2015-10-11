@@ -5,7 +5,6 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 from configuration import Configuration
 
 
-# TODO: let tspView inherit from Configuration -> calling super()
 class tspView(QtWidgets.QWidget, Configuration):
     lenChanged = QtCore.pyqtSignal(str)
     twoOptChanged = QtCore.pyqtSignal(str)
@@ -25,6 +24,7 @@ class tspView(QtWidgets.QWidget, Configuration):
         self.restartTimer.setSingleShot(True)
 
         self.scale = 1
+        self.correction = 1
         self.running = False
 
         self.cityPen = QtGui.QPen(QtGui.QColor("black"))
@@ -43,8 +43,8 @@ class tspView(QtWidgets.QWidget, Configuration):
         self.randInit()
 
     def updatePen(self):
-        self.tourPen.setWidth(self.scale / sqrt(self.N) / 30)
-        self.tourPenIncomplete.setWidth(self.scale / sqrt(self.N) / 30)
+        self.tourPen.setWidth(self.scale * self.correction / sqrt(self.N) / 30)
+        self.tourPenIncomplete.setWidth(self.scale * self.correction / sqrt(self.N) / 30)
 
     def changeMethod(self, method: str):
         super().changeMethod(method)
@@ -52,7 +52,11 @@ class tspView(QtWidgets.QWidget, Configuration):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self.scale = min(self.size().height(), self.size().width())
+        self.rescale()
+
+    def rescale(self):
+        self.scale = min(self.size().height()/self.maxY, self.size().width()/self.maxX)
+        self.correction = max(self.maxX, self.maxY)
         self.updatePen()
 
     def paintEvent(self, event):
@@ -72,7 +76,7 @@ class tspView(QtWidgets.QWidget, Configuration):
         for x, y in self.getCities():
             x *= self.scale
             y *= self.scale
-            p.drawEllipse(QtCore.QPoint(x, y), self.scale * s, self.scale * s)
+            p.drawEllipse(QtCore.QPoint(x, y), self.scale * self.correction * s, self.scale * self.correction * s)
 
     def drawWays(self, p):
         if self.doConcorde:
@@ -96,7 +100,6 @@ class tspView(QtWidgets.QWidget, Configuration):
 
         else:
             # draw heuristic
-
             for a, b in self.getWayCoordinates():
                 self.drawLine(p, a, b)
 
@@ -151,7 +154,7 @@ class tspView(QtWidgets.QWidget, Configuration):
 
     def init(self):
         super().init()
-        self.updatePen()
+        self.rescale()
 
     def randInit(self):
         super().randInit()
@@ -160,6 +163,11 @@ class tspView(QtWidgets.QWidget, Configuration):
 
     def DCEInit(self):
         super().DCEInit()
+        self.updateOptimum()
+        self.update()
+
+    def TSPLIBInit(self, file):
+        super().TSPLIBInit(file)
         self.updateOptimum()
         self.update()
 
@@ -176,4 +184,3 @@ class tspView(QtWidgets.QWidget, Configuration):
             self.optimumChanged.emit("n/a")
             gap = "n/a"
         self.gapChanged.emit(gap)
-
