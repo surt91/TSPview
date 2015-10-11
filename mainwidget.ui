@@ -289,12 +289,36 @@
     </property>
     <addaction name="actionBeenden"/>
    </widget>
+   <widget class="QMenu" name="menuColors">
+    <property name="title">
+     <string>Colors</string>
+    </property>
+    <addaction name="actionCities"/>
+    <addaction name="actionTour"/>
+    <addaction name="actionOptimalTour"/>
+   </widget>
    <addaction name="menuDatei"/>
+   <addaction name="menuColors"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionBeenden">
    <property name="text">
     <string>Beenden</string>
+   </property>
+  </action>
+  <action name="actionCities">
+   <property name="text">
+    <string>Cities</string>
+   </property>
+  </action>
+  <action name="actionTour">
+   <property name="text">
+    <string>Tour</string>
+   </property>
+  </action>
+  <action name="actionOptimalTour">
+   <property name="text">
+    <string>Optimal Tour</string>
    </property>
   </action>
  </widget>

@@ -32,6 +32,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.comboMethod.activated.connect(self.changeMethod)
         self.ui.comboTSPLIB.activated.connect(self.initTSPLIB)
 
+        self.ui.actionCities.triggered.connect(self.ui.view.changeColorCities)
+        self.ui.actionTour.triggered.connect(self.ui.view.changeColorTour)
+        self.ui.actionOptimalTour.triggered.connect(self.ui.view.changeColorConcorde)
+
         self.ui.pushButtonStep.clicked.connect(self.ui.view.step)
         self.ui.pushButtonRun.toggled.connect(self.ui.view.run)
         self.ui.pushButtonRandInit.clicked.connect(self.ui.view.randInit)

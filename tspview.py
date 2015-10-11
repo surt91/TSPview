@@ -38,8 +38,9 @@ class tspView(QtWidgets.QWidget, Configuration):
         c.setAlphaF(0.2)
         self.concordePen = QtGui.QPen(c)
 
-        self.cityBrush = QtGui.QColor("black")
-        self.cityBrush.setAlphaF(0.8)
+        c.setAlphaF(0.8)
+        self.cityBrush = QtGui.QBrush(c)
+        self.pointsize = 1
 
         self.randInit()
 
@@ -49,6 +50,25 @@ class tspView(QtWidgets.QWidget, Configuration):
 
         s = 1 / sqrt(self.N) / 15
         self.pointsize = self.scale * self.correction * s
+
+    def getColorFromDialog(self, initial=QtCore.Qt.black):
+        return QtWidgets.QColorDialog.getColor(initial, self, "Pick a Color", QtWidgets.QColorDialog.ShowAlphaChannel)
+
+    def changeColorCities(self):
+        color = self.getColorFromDialog(self.cityPen.color())
+        self.cityPen.setColor(color)
+        self.cityBrush.setColor(color)
+        self.update()
+
+    def changeColorTour(self):
+        color = self.getColorFromDialog(self.tourPen.color())
+        self.tourPen.setColor(color)
+        self.tourPenIncomplete.setColor(color)
+        self.update()
+
+    def changeColorConcorde(self):
+        self.concordePen.setColor(self.getColorFromDialog(self.concordePen.color()))
+        self.update()
 
     def changeMethod(self, method: str):
         super().changeMethod(method)
