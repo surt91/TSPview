@@ -172,7 +172,7 @@ class Configuration:
 
         if not self.currentMethod == method:
             self.currentMethod = method
-            self.__ways = []
+            self.clearSolution()
 
     def step(self):
         if self.lp and not self.finishedFirst:
