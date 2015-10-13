@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>744</width>
-    <height>701</height>
+    <width>705</width>
+    <height>636</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,39 @@
    <layout class="QGridLayout" name="gridLayout_2">
     <item row="1" column="2">
      <layout class="QGridLayout" name="gridLayout">
+      <item row="11" column="1">
+       <widget class="QSlider" name="sliderZoom">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimum">
+         <number>-100</number>
+        </property>
+        <property name="maximum">
+         <number>200</number>
+        </property>
+        <property name="singleStep">
+         <number>10</number>
+        </property>
+        <property name="pageStep">
+         <number>100</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
       <item row="11" column="2">
+       <widget class="QPushButton" name="pushButtonFit">
+        <property name="text">
+         <string>Zoom</string>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="2">
        <widget class="QDoubleSpinBox" name="spinBoxDelay">
         <property name="suffix">
          <string>s</string>
@@ -33,23 +65,60 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QLabel" name="label">
+      <item row="8" column="1">
+       <widget class="QPushButton" name="pushButtonStep">
         <property name="text">
-         <string>N</string>
+         <string>Step</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QDoubleSpinBox" name="spinBoxSigma"/>
-      </item>
-      <item row="17" column="2">
-       <widget class="QLabel" name="label2Opt">
+      <item row="13" column="1">
+       <widget class="QLabel" name="label_3">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="text">
-         <string>0</string>
+         <string>Length</string>
+        </property>
+       </widget>
+      </item>
+      <item row="13" column="2">
+       <widget class="QLabel" name="labelLen">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>0.0000</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QPushButton" name="pushButtonDCE">
+        <property name="text">
+         <string>DCE</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1" colspan="2">
+       <widget class="QCheckBox" name="checkBox2Opt">
+        <property name="text">
+         <string>Improve with 2-Opt</string>
+        </property>
+       </widget>
+      </item>
+      <item row="16" column="1">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>2-Opt swaps</string>
         </property>
        </widget>
       </item>
@@ -80,89 +149,20 @@
           <string>LP &amp; Cutting Planes</string>
          </property>
         </item>
+        <item>
+         <property name="text">
+          <string>Manual</string>
+         </property>
+        </item>
        </widget>
       </item>
-      <item row="13" column="2">
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="1" column="1" colspan="2">
-       <widget class="QPushButton" name="pushButtonRandInit">
+      <item row="16" column="2">
+       <widget class="QLabel" name="label2Opt">
         <property name="text">
-         <string>Random Init</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="1">
-       <widget class="QPushButton" name="pushButtonStep">
-        <property name="text">
-         <string>Step</string>
-        </property>
-       </widget>
-      </item>
-      <item row="14" column="1">
-       <widget class="QLabel" name="label_3">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Length</string>
-        </property>
-       </widget>
-      </item>
-      <item row="14" column="2">
-       <widget class="QLabel" name="labelLen">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>0.0000</string>
+         <string>0</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="1" colspan="2">
-       <widget class="QCheckBox" name="checkBox2Opt">
-        <property name="text">
-         <string>Improve with 2-Opt</string>
-        </property>
-       </widget>
-      </item>
-      <item row="17" column="1">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>2-Opt swaps</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2">
-       <widget class="QPushButton" name="pushButtonDCE">
-        <property name="text">
-         <string>DCE</string>
-        </property>
-       </widget>
-      </item>
-      <item row="11" column="1">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Delay</string>
         </property>
        </widget>
       </item>
@@ -176,27 +176,24 @@
         </property>
        </widget>
       </item>
-      <item row="16" column="1">
-       <widget class="QLabel" name="label_5">
+      <item row="10" column="1">
+       <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Gap to Opt.</string>
+         <string>Delay</string>
         </property>
        </widget>
       </item>
-      <item row="15" column="1">
+      <item row="14" column="1">
        <widget class="QLabel" name="label_7">
         <property name="text">
          <string>Optimum</string>
         </property>
        </widget>
       </item>
-      <item row="16" column="2">
-       <widget class="QLabel" name="labelGap">
+      <item row="15" column="1">
+       <widget class="QLabel" name="label_5">
         <property name="text">
-         <string>n/a</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         <string>Gap to Opt.</string>
         </property>
        </widget>
       </item>
@@ -213,8 +210,51 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>N</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QDoubleSpinBox" name="spinBoxSigma"/>
+      </item>
+      <item row="12" column="2">
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="6" column="1" colspan="2">
+       <widget class="QCheckBox" name="checkBoxEdgeweight">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Show edgeweight (only LP)</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" colspan="2">
+       <widget class="QPushButton" name="pushButtonRandInit">
+        <property name="text">
+         <string>Random Init</string>
+        </property>
+       </widget>
+      </item>
       <item row="15" column="2">
-       <widget class="QLabel" name="labelOpt">
+       <widget class="QLabel" name="labelGap">
         <property name="text">
          <string>n/a</string>
         </property>
@@ -223,7 +263,7 @@
         </property>
        </widget>
       </item>
-      <item row="10" column="2">
+      <item row="9" column="2">
        <widget class="QPushButton" name="pushButtonRun">
         <property name="text">
          <string>Run</string>
@@ -233,14 +273,24 @@
         </property>
        </widget>
       </item>
-      <item row="10" column="1">
+      <item row="14" column="2">
+       <widget class="QLabel" name="labelOpt">
+        <property name="text">
+         <string>n/a</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="1">
        <widget class="QPushButton" name="pushButtonClear">
         <property name="text">
          <string>Clear</string>
         </property>
        </widget>
       </item>
-      <item row="9" column="2">
+      <item row="8" column="2">
        <widget class="QPushButton" name="pushButtonFinish">
         <property name="text">
          <string>Finish</string>
@@ -254,7 +304,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0" rowspan="18">
+      <item row="0" column="0" rowspan="17">
        <widget class="tspView" name="view" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -270,19 +320,6 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="1" colspan="2">
-       <widget class="QCheckBox" name="checkBoxEdgeweight">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Show edgeweight (only LP)</string>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
      </layout>
     </item>
    </layout>
@@ -292,17 +329,17 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>744</width>
-     <height>25</height>
+     <width>705</width>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDatei">
     <property name="title">
      <string>Datei</string>
     </property>
-    <addaction name="actionBeenden"/>
     <addaction name="actionSaveTSPLIB"/>
     <addaction name="actionSaveSVG"/>
+    <addaction name="actionBeenden"/>
    </widget>
    <widget class="QMenu" name="menuColors">
     <property name="title">
@@ -318,7 +355,7 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionBeenden">
    <property name="text">
-    <string>Beenden</string>
+    <string>Close</string>
    </property>
   </action>
   <action name="actionCities">

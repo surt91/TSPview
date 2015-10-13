@@ -44,6 +44,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButtonDCE.clicked.connect(self.ui.view.DCEInit)
         self.ui.pushButtonClear.clicked.connect(self.ui.view.clearSolution)
         self.ui.pushButtonFinish.clicked.connect(self.ui.view.finish)
+        self.ui.pushButtonFit.clicked.connect(self.ui.view.fit)
+        self.ui.pushButtonFit.clicked.connect(lambda: self.ui.sliderZoom.setValue(0))
+
+        self.ui.sliderZoom.valueChanged.connect(self.ui.view.zoom)
 
         self.ui.spinBoxN.valueChanged.connect(self.ui.view.setN)
         self.ui.spinBoxDelay.valueChanged.connect(self.ui.view.setTimestep)
@@ -61,6 +65,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.view.twoOptAvailable.connect(lambda x: self.ui.checkBoxEdgeweight.setEnabled(not x))
         self.ui.view.TSPLIBChange.connect(lambda x: self.ui.comboTSPLIB.setCurrentIndex(self.TSPLIBinstances[x]))
         self.ui.view.TSPLIBChange.connect(lambda x: self.ui.spinBoxN.setValue(int(re.sub("[^0-9]", "", x))))
+        self.ui.view.zoomChange.connect(self.ui.sliderZoom.setValue)
 
         if os.path.exists("concorde"):
             self.ui.checkBoxConcorde.setEnabled(True)
