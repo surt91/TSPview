@@ -232,6 +232,8 @@ class Configuration:
 
     def setSigma(self, s):
         self.sigma = s / 2 / len(self.__cities) * pi
+        if self.currentEnsemble:
+            self.DCEInit()
 
     def setDo2Opt(self, b):
         self.do2Opt = b

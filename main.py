@@ -49,12 +49,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.ui.checkBox2Opt.toggled.connect(self.ui.view.setDo2Opt)
         self.ui.checkBoxConcorde.toggled.connect(self.ui.view.setDoConcorde)
+        self.ui.checkBoxEdgeweight.toggled.connect(self.ui.view.setShowValues)
 
         self.ui.view.lenChanged.connect(self.ui.labelLen.setText)
         self.ui.view.twoOptChanged.connect(self.ui.label2Opt.setText)
         self.ui.view.optimumChanged.connect(self.ui.labelOpt.setText)
         self.ui.view.gapChanged.connect(self.ui.labelGap.setText)
         self.ui.view.twoOptAvailable.connect(self.ui.checkBox2Opt.setEnabled)
+        self.ui.view.twoOptAvailable.connect(lambda x: self.ui.checkBoxEdgeweight.setEnabled(not x))
         self.ui.view.TSPLIBChange.connect(lambda x: self.ui.comboTSPLIB.setCurrentIndex(self.TSPLIBinstances[x]))
         self.ui.view.TSPLIBChange.connect(lambda x: self.ui.spinBoxN.setValue(int(re.sub("[^0-9]", "", x))))
 
@@ -73,6 +75,7 @@ class MainWindow(QtWidgets.QMainWindow):
         import tarfile
         tfile = tarfile.open("ALL_tsp.tar.gz", 'r:gz')
         tfile.extractall('TSPLIB')
+        os.remove("ALL_tsp.tar.gz")
 
     def populateTSPLIB(self):
         import gzip

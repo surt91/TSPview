@@ -16,6 +16,7 @@ class tspView(QtWidgets.QWidget, Configuration):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
+
         self.timer = QtCore.QTimer()
         self.timestep = 500
         self.timer.timeout.connect(self.step)
@@ -27,6 +28,7 @@ class tspView(QtWidgets.QWidget, Configuration):
         self.scale = 1
         self.correction = 1
         self.running = False
+        self.showValues = False
 
         self.cityPen = QtGui.QPen(QtGui.QColor("black"))
         self.cityPen.setWidth(1)
@@ -85,6 +87,7 @@ class tspView(QtWidgets.QWidget, Configuration):
         self.updatePen()
 
     def paintEvent(self, event):
+        super().paintEvent(event)
         p = QtGui.QPainter()
         p.begin(self)
         p.setRenderHint(QtGui.QPainter.Antialiasing)
@@ -122,14 +125,14 @@ class tspView(QtWidgets.QWidget, Configuration):
                             p.setPen(self.tourPenIncomplete)
                         else:
                             p.setPen(self.tourPen)
-                        self.drawLine(p, c[i], c[j])
+                        self.drawLine(p, c[i], c[j], self.adjMatrix[i*self.N+j])
 
         else:
             # draw heuristic
             for a, b in self.getWayCoordinates():
                 self.drawLine(p, a, b)
 
-    def drawLine(self, p, a, b):
+    def drawLine(self, p, a, b, w=1.0):
         x1, y1 = a
         x2, y2 = b
         x1 = self.addMargin(x1)
@@ -137,6 +140,8 @@ class tspView(QtWidgets.QWidget, Configuration):
         y1 = self.addMargin(y1)
         y2 = self.addMargin(y2)
         p.drawLine(x1, y1, x2, y2)
+        if w != 1 and self.showValues:
+            p.drawText((x1+x2)//2, (y1+y2)//2, "%.2f" % w)
 
     def step(self):
         if self.finishedFirst and (not self.do2Opt or self.finished2Opt):
@@ -201,6 +206,10 @@ class tspView(QtWidgets.QWidget, Configuration):
     def setDoConcorde(self, b):
         super().setDoConcorde(b)
         self.updateOptimum()
+        self.update()
+
+    def setShowValues(self, b):
+        self.showValues = b
         self.update()
 
     def updateOptimum(self):
