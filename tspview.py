@@ -220,3 +220,11 @@ class tspView(QtWidgets.QWidget, Configuration):
             self.optimumChanged.emit("n/a")
             gap = "n/a"
         self.gapChanged.emit(gap)
+
+    def saveSVG(self, name):
+        pass
+        #img = QtGui.QImage(self.size(), QtGui.QImage.)
+        #p = QtGui.QPainter(img)
+        #self.render(p)
+
+        #img.save(name)
