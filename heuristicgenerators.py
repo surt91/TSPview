@@ -58,31 +58,17 @@ def greedyGenerator(cities, ways):
     heap = [(dist(cities[i], cities[j]), (i, j)) for i in range(len(cities)) for j in range(i)]
     heapq.heapify(heap)
 
-    uf = UnionFindWrapper(range(len(cities)))
-    num = [0 for _ in range(len(cities))]
     ctr = 0
+    valid, lastEdge = tourStaysValid(len(cities))
     while heap:
         d, edge = heapq.heappop(heap)
-        i, j = edge
-        if (uf.find(i) != uf.find(j)) and (num[i] <= 1 and num[j] <= 1):  # does not make a loop (except last)
-            num[i] += 1
-            num[j] += 1
-            uf.union(i, j)
-            yield (), ((i, j),)
+        if valid(edge):
+            yield (), (edge,)
             ctr += 1
             if ctr == len(cities) - 1:
                 break
 
-    c1 = len(cities)
-    c2 = len(cities)
-    for i, j in enumerate(num):
-        if j == 1 and not c1 < len(cities):
-            c1 = i
-        elif j == 1:
-            c2 = i
-            break
-
-    yield (), ((c1, c2),)
+    yield (), (lastEdge(),)
 
 
 def farInGenerator(cities, ways):
@@ -149,3 +135,30 @@ def twoOptGenerator(t, d):
     while not finished:
         finished, toRemove, toAdd = swap()
         yield toRemove, toAdd
+
+
+def tourStaysValid(N):
+    uf = UnionFindWrapper(range(N))
+    num = [0 for _ in range(N)]
+
+    def f(edge):
+        i, j = edge
+        if (uf.find(i) != uf.find(j)) and (num[i] <= 1 and num[j] <= 1):  # does not make a loop (except last)
+            num[i] += 1
+            num[j] += 1
+            uf.union(i, j)
+            return True
+        else:
+            return False
+
+    def g():
+        c1 = N
+        c2 = N
+        for i, j in enumerate(num):
+            if j == 1 and not c1 < N:
+                c1 = i
+            elif j == 1:
+                c2 = i
+                break
+        return c1, c2
+    return f, g
