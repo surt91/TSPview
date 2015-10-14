@@ -163,7 +163,7 @@ class Configuration:
         else:
             self.lp = False
 
-            if method == "Next Neighbor":
+            if method == "Nearest Neighbor":
                 self.__heuristic = nextNeighborGenerator(self.__cities, self.getWays())
             elif method == "Greedy":
                 self.__heuristic = greedyGenerator(self.__cities, self.getWays())

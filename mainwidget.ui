@@ -129,7 +129,7 @@
        <widget class="QComboBox" name="comboMethod">
         <item>
          <property name="text">
-          <string>Next Neighbor</string>
+          <string>Nearest Neighbor</string>
          </property>
         </item>
         <item>
@@ -338,7 +338,7 @@
    </property>
    <widget class="QMenu" name="menuDatei">
     <property name="title">
-     <string>Datei</string>
+     <string>File</string>
     </property>
     <addaction name="actionLoad"/>
     <addaction name="actionSaveTSPLIB"/>
