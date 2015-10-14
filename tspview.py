@@ -276,7 +276,6 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
                 self.manualTour.append(idx)
                 self.addWay(edge)
                 # close to the last city
-                print(self.N, len(self.manualTour), self.manualTour)
                 if len(self.manualTour) == self.N:
                     self.addWay((self.manualTour[-1], self.manualTour[0]))
                     self.finishedFirst = True
