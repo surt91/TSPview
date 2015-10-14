@@ -27,6 +27,7 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
         self.cityItems = []
         self.edgeItems = []
         self.textItems = []
+        self.edgeConcordeItems = []
 
         self.timer = QtCore.QTimer()
         self.timestep = 500
@@ -126,16 +127,6 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
         self.updatePen()
 
     def drawWays(self):
-        if self.doConcorde:
-            # draw optimal
-            for a, b in self.concordeCoordinates():
-                x1, y1 = a
-                x2, y2 = b
-                item = QtWidgets.QGraphicsLineItem(x1, y1, x2, y2)
-                item.setPen(self.concordePen)
-                self.edgeItems.append(item)
-                self.scene.addItem(item)
-
         # draw adjMatrix or ways?
         if self.lp:
             c = self.getCities()
@@ -302,7 +293,21 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
     def setDoConcorde(self, b):
         super().setDoConcorde(b)
         self.updateOptimum()
-        self.drawWays()
+
+        if b:
+            # draw optimal
+            for a, b in self.concordeCoordinates():
+                x1, y1 = a
+                x2, y2 = b
+                item = QtWidgets.QGraphicsLineItem(x1, y1, x2, y2)
+                item.setPen(self.concordePen)
+                self.edgeConcordeItems.append(item)
+                self.scene.addItem(item)
+        else:
+            for e in self.edgeConcordeItems:
+                self.scene.removeItem(e)
+            self.edgeConcordeItems.clear()
+
         self.update()
 
     def setShowValues(self, b):
