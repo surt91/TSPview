@@ -104,9 +104,13 @@ class Configuration:
         return self.adjust_cities(tmp)
 
     def adjust_cities(self, cities):
+        maxX = max(cities)[0]
         minX = min(cities)[0]
-        maxY = max(cities, key=lambda x: x[1])[1]  # y-axis in Qt and TSPLIB are in different directions
-        return tuple((x-minX, maxY-y) for x, y in cities)
+        maxY = max(cities, key=lambda x: x[1])[1]
+        minY = min(cities, key=lambda x: x[1])[1]
+        length = max((maxX-minX), (maxY-minY))
+        # y-axis in Qt and TSPLIB are in different directions
+        return tuple(((x-minX)/length, (maxY-y)/length) for x, y in cities)
 
     def TSPLIBInit(self, file):
         self.currentEnsemble = "tsplib"

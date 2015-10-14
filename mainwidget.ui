@@ -93,6 +93,9 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="toolTip">
+         <string>Length of TSPLIB instances is rescaled such that the longest side is 1</string>
+        </property>
         <property name="text">
          <string>0.0000</string>
         </property>
