@@ -245,8 +245,8 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
         self.update()
 
     def mouseMoveEvent(self, e):
-        self.cursorPosition = self.mapToScene(e.pos())
-        if self.currentLine and not self.finishedFirst:
+        if self.currentLine and not self.finishedFirst and self.citySelected is not None:
+            self.cursorPosition = self.mapToScene(e.pos())
             c = self.getCities()
             self.currentLine.setLine(QtCore.QLineF(QtCore.QPointF(*c[self.citySelected]), self.cursorPosition))
 

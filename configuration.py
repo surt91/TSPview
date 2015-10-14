@@ -57,6 +57,8 @@ class Configuration:
         elif self.currentEnsemble == "tsplib":
             self.currentFile = choice(self.TSPLIB)
             self.TSPLIBInit(self.currentFile)
+        elif self.currentEnsemble == "custom":
+            pass
         else:
             raise
 
