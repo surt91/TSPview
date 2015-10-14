@@ -3,6 +3,7 @@ from math import sqrt
 from PyQt5 import QtGui, QtCore, QtWidgets
 
 from configuration import Configuration
+from cityItem import CityItem
 
 
 class tspView(QtWidgets.QGraphicsView, Configuration):
@@ -20,7 +21,7 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
         self.scene = QtWidgets.QGraphicsScene(self)
         self.setScene(self.scene)
         self.setRenderHint(QtGui.QPainter.Antialiasing)
-        self.setDragMode(self.ScrollHandDrag)
+        #self.setDragMode(self.ScrollHandDrag)
         self.setResizeAnchor(self.AnchorUnderMouse)
         self.setTransformationAnchor(self.AnchorUnderMouse)
         self.cityItems = []
@@ -34,6 +35,11 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
         self.restartTimer = QtCore.QTimer()
         self.restartTimer.timeout.connect(self.restart)
         self.restartTimer.setSingleShot(True)
+
+        self.citySelected = False
+        self.manualTour = []
+        self.currentLine = None
+        self.cursorPosition = None
 
         self.running = False
         self.showValues = False
@@ -81,7 +87,7 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
         self.fitInView(0, 0, 1, 1, QtCore.Qt.KeepAspectRatio)
 
     def updatePen(self):
-        s = 1 / sqrt(self.N) / 15
+        s = 1 / sqrt(self.N) / 10
 
         self.concordePen.setWidth(s/2)
         self.cityPen.setWidth(s/2)
@@ -173,21 +179,25 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
                 self.restartTimer.start(10 * 1000)
             return True
         else:
-            super().step()
+            if super().step():
+                return True
 
-            for e in self.edgeItems:
-                self.scene.removeItem(e)
-            self.edgeItems.clear()
-            for t in self.textItems:
-                self.scene.removeItem(t)
-            self.textItems.clear()
-            self.drawWays()
-
-            self.update()
-            self.lenChanged.emit("%.4f" % self.length())
-            self.twoOptChanged.emit("%d" % self.n2Opt())
-            self.updateOptimum()
+            self.updateWays()
             return False
+
+    def updateWays(self):
+        for e in self.edgeItems:
+            self.scene.removeItem(e)
+        self.edgeItems.clear()
+        for t in self.textItems:
+            self.scene.removeItem(t)
+        self.textItems.clear()
+        self.drawWays()
+
+        self.update()
+        self.lenChanged.emit("%.4f" % self.length())
+        self.twoOptChanged.emit("%d" % self.n2Opt())
+        self.updateOptimum()
 
     def finish(self):
         while not self.step():
@@ -219,6 +229,7 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
         for t in self.textItems:
             self.scene.removeItem(t)
         self.textItems.clear()
+        self.citySelected = None
         self.update()
 
     def init(self):
@@ -226,10 +237,12 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
         self.rescale()
         # add all cities
         self.cityItems.clear()
-        self.edgeItems.clear()
+        self.clearSolution()
         self.scene.clear()
-        for x, y in self.getCities():
-            item = QtWidgets.QGraphicsEllipseItem(x-self.pointsize/2, y-self.pointsize/2, self.pointsize, self.pointsize)
+
+        for n, point in enumerate(self.getCities()):
+            x, y = point
+            item = CityItem(x, y, self.pointsize, n, self.cityClicked)
             item.setPen(self.cityPen)
             item.setBrush(self.cityBrush)
             self.cityItems.append(item)
@@ -239,6 +252,37 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
         self.initScale = self.transform()
 
         self.update()
+
+    def mouseMoveEvent(self, e):
+        self.cursorPosition = self.mapToScene(e.pos())
+        if self.currentLine and not self.finishedFirst:
+            c = self.getCities()
+            self.currentLine.setLine(QtCore.QLineF(QtCore.QPointF(*c[self.citySelected]), self.cursorPosition))
+
+    def cityClicked(self, idx):
+        if self.currentMethod != "Manual" or self.finishedFirst:
+            return
+
+        if self.citySelected is None:
+            c = self.getCities()
+            self.currentLine = QtWidgets.QGraphicsLineItem(QtCore.QLineF(QtCore.QPointF(*c[idx]), self.cursorPosition))
+            self.currentLine.setPen(self.tourPen)
+            self.scene.addItem(self.currentLine)
+            self.manualTour = [idx]
+            self.citySelected = idx
+        else:
+            edge = (self.citySelected, idx)
+            if idx not in self.manualTour:
+                self.manualTour.append(idx)
+                self.addWay(edge)
+                # close to the last city
+                print(self.N, len(self.manualTour), self.manualTour)
+                if len(self.manualTour) == self.N:
+                    self.addWay((self.manualTour[-1], self.manualTour[0]))
+                    self.finishedFirst = True
+                self.updateWays()
+
+                self.citySelected = idx
 
     def randInit(self):
         super().randInit()

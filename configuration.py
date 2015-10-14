@@ -168,13 +168,15 @@ class Configuration:
             elif method == "Random":
                 self.__heuristic = randomGenerator(self.__cities, self.getWays())
             else:
-                raise ValueError
+                self.__heuristic = None
 
         if not self.currentMethod == method:
             self.currentMethod = method
             self.clearSolution()
 
     def step(self):
+        if not self.__heuristic:
+            return True
         if self.lp and not self.finishedFirst:
             try:
                 self.adjMatrix = next(self.__heuristic)
