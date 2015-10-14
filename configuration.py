@@ -112,8 +112,8 @@ class Configuration:
         # y-axis in Qt and TSPLIB are in different directions
         return tuple(((x-minX)/length, (maxY-y)/length) for x, y in cities)
 
-    def TSPLIBInit(self, file):
-        self.currentEnsemble = "tsplib"
+    def TSPLIBInit(self, file, custom=False):
+        self.currentEnsemble = "tsplib" if not custom else "custom"
         self.currentFile = file
         self.__cities = self.getCitiesFromTSPLIB(file)
         self.maxX = max(self.__cities)[0]
@@ -179,6 +179,10 @@ class Configuration:
             self.clearSolution()
 
     def step(self):
+        # for competiton, do not allow optimization
+        if self.currentEnsemble == "custom":
+            return True
+
         if not self.__heuristic:
             return True
         if self.lp and not self.finishedFirst:
@@ -269,7 +273,7 @@ class Configuration:
             tsplib += "EDGE_WEIGHT_TYPE : EUC_2D\n"
             tsplib += "NODE_COORD_SECTION\n"
 
-            for n, coord in enumerate(self.__cities):
+            for n, coord in enumerate(self.__cities, start=1):
                 x, y = coord
                 tsplib += "{} {} {}\n".format(n, x * 10 ** 5, y * 10 ** 5)
 
@@ -277,9 +281,12 @@ class Configuration:
                 f.write(tsplib)
 
     def loadTSPLIB(self, name):
-        raise NotImplementedError
+        self.TSPLIBInit(name, custom=True)
 
     def concorde(self):
+        # do not optimize for competition
+        if self.currentEnsemble == "custom":
+            return
         if self.__concordeWays:
             # we already have the optimum
             return

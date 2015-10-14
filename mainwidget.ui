@@ -340,6 +340,7 @@
     <property name="title">
      <string>Datei</string>
     </property>
+    <addaction name="actionLoad"/>
     <addaction name="actionSaveTSPLIB"/>
     <addaction name="actionSaveSVG"/>
     <addaction name="actionBeenden"/>
@@ -384,6 +385,11 @@
   <action name="actionSaveSVG">
    <property name="text">
     <string>Save Configuration as .svg</string>
+   </property>
+  </action>
+  <action name="actionLoad">
+   <property name="text">
+    <string>Load Configuration </string>
    </property>
   </action>
  </widget>

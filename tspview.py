@@ -284,9 +284,10 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
         self.updateOptimum()
         self.update()
 
-    def TSPLIBInit(self, file):
-        super().TSPLIBInit(file)
-        self.TSPLIBChange.emit(self.currentFile.replace("TSPLIB/", ""))
+    def TSPLIBInit(self, file, custom=False):
+        super().TSPLIBInit(file, custom)
+        if not custom:
+            self.TSPLIBChange.emit(self.currentFile.replace("TSPLIB/", ""))
         self.updateOptimum()
         self.update()
 
@@ -319,7 +320,7 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
     def updateOptimum(self):
         if self.doConcorde:
             self.optimumChanged.emit("%.4f" % self.optimalLength())
-            gap = "%.2f%%" % ((self.length() / self.optimalLength() - 1) * 100)
+            gap = "%.2f%%" % ((self.length() / (self.optimalLength()+1e-10) - 1) * 100)
         else:
             self.optimumChanged.emit("n/a")
             gap = "n/a"

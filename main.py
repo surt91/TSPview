@@ -37,6 +37,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.actionOptimalTour.triggered.connect(self.ui.view.changeColorConcorde)
         self.ui.actionSaveTSPLIB.triggered.connect(self.saveConfig)
         self.ui.actionSaveSVG.triggered.connect(self.savePicture)
+        self.ui.actionLoad.triggered.connect(self.loadConfig)
 
         self.ui.pushButtonStep.clicked.connect(self.ui.view.step)
         self.ui.pushButtonRun.toggled.connect(self.ui.view.run)
@@ -132,6 +133,10 @@ class MainWindow(QtWidgets.QMainWindow):
             from lp.CplexTSPSolver import CplexTSPSolver
         except ImportError:
             self.ui.comboMethod.removeItem(4)
+
+    def loadConfig(self):
+        name = QtWidgets.QFileDialog.getOpenFileName()[0]
+        self.ui.view.loadTSPLIB(name)
 
     def saveConfig(self):
         name = QtWidgets.QFileDialog.getSaveFileName()[0]
