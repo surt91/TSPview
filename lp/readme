@@ -1,7 +1,4 @@
-This needs CPLEX and boost::python
-also the Jamroot file has to be modified to match your setup
-
-(under archlinux boost-build from the aur is needed)
+This needs CPLEX, its C++ bindings and boost::python
 
 compile with (and suitable paths)
     g++ -shared -Wall -Wextra -Wno-unused-parameter -pedantic -std=c++11 -m64 -O3 -fPIC -fno-strict-aliasing -fomit-frame-pointer -fexceptions -DNDEBUG -DIL_STD -pipe -I/opt/ibm/ILOG/CPLEX_Studio126/concert/include -I/opt/ibm/ILOG/CPLEX_Studio126/cplex/include -I/usr/include/python3.5m -L/opt/ibm/ILOG/CPLEX_Studio126/concert/lib/x86-64_linux/static_pic/ -L/opt/ibm/ILOG/CPLEX_Studio126/cplex/lib/x86-64_linux/static_pic minCut.cpp cplex.cpp -lm -lconcert -lilocplex -lcplex -pthread -lpython3.5m -lboost_python3 -o CplexTSPSolver.so

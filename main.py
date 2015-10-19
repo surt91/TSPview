@@ -26,7 +26,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def init_ui(self):
         self.ui.setupUi(self)
 
-        # Fenstereigenschaften
         self.setWindowIcon(QtGui.QIcon(os.path.join("img/icon.ico")))
 
         self.ui.comboMethod.activated.connect(self.changeMethod)
@@ -89,11 +88,8 @@ class MainWindow(QtWidgets.QMainWindow):
         import gzip
 
         doable = []
-        # try:
         if not os.path.exists("TSPLIB"):
             self.getTSPLIB()
-        # except:
-        #     return
 
         for name in os.listdir("TSPLIB"):
             euclidean = False

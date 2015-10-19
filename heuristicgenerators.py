@@ -120,10 +120,9 @@ def twoOptGenerator(t, d):
         n = len(t)
         for i in range(n):
             for j in range(i + 1, n):
-
-                # if sum(neueKanten) < sum(alteKanten)
+                # if sum(newEdges) < sum(oldEdges)
                 if d[t[i]][t[j]] + d[t[i + 1]][t[(j + 1) % n]] < d[t[i]][t[i + 1]] + d[t[j]][t[(j + 1) % n]]:
-                    # tausche die Reihenfolge von j bis i+1 um
+                    # reverse the sequence from j to i+1
                     ct = j - i
                     for m in range(ct // 2):
                         t[i + ct - m], t[i + 1 + m] = t[i + 1 + m], t[i + ct - m]
