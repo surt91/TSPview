@@ -247,17 +247,34 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
 
         self.update()
 
-    def mouseMoveEvent(self, e):
-        self.cursorPosition = self.mapToScene(e.pos())
+    def updateCurrentLine(self):
         if self.currentLine and not self.finishedFirst and self.citySelected is not None:
             c = self.getCities()
             self.currentLine.setLine(QtCore.QLineF(QtCore.QPointF(*c[self.citySelected]), self.cursorPosition))
 
-    def cityClicked(self, idx):
+    def mouseMoveEvent(self, e):
+        self.cursorPosition = self.mapToScene(e.pos())
+        self.updateCurrentLine()
+
+    def mousePressEvent(self, e):
+        if e.button() == QtCore.Qt.RightButton:
+            self.cityClicked(0, True)
+            self.updateCurrentLine()
+        super().mousePressEvent(e)
+
+    def cityClicked(self, idx, undo=False):
         if self.currentMethod != "Manual" or self.finishedFirst:
             return
 
-        if self.citySelected is None:
+        if undo:
+            if len(self.manualTour) < 2:
+                return
+            self.scene.removeItem(self.edgeItems.pop())
+            self.removeWay((self.manualTour[-2], self.manualTour[-1]))
+            self.manualTour.pop()
+            self.citySelected = self.manualTour[-1]
+
+        elif self.citySelected is None:
             c = self.getCities()
             self.currentLine = QtWidgets.QGraphicsLineItem(QtCore.QLineF(QtCore.QPointF(*c[idx]), self.cursorPosition))
             self.currentLine.setPen(self.tourPen)
@@ -279,6 +296,7 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
                 self.citySelected = idx
 
         self.tourChange.emit(" ".join(map(str, self.manualTour)))
+        self.update()
 
     def randInit(self):
         super().randInit()
