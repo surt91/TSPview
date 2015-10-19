@@ -14,6 +14,7 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
     twoOptAvailable = QtCore.pyqtSignal(bool)
     TSPLIBChange = QtCore.pyqtSignal(str)
     zoomChange = QtCore.pyqtSignal(int)
+    tourChange = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -221,6 +222,8 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
             self.scene.removeItem(t)
         self.textItems.clear()
         self.citySelected = None
+        self.scene.removeItem(self.currentLine)
+        self.tourChange.emit("")
         self.update()
 
     def init(self):
@@ -245,8 +248,8 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
         self.update()
 
     def mouseMoveEvent(self, e):
+        self.cursorPosition = self.mapToScene(e.pos())
         if self.currentLine and not self.finishedFirst and self.citySelected is not None:
-            self.cursorPosition = self.mapToScene(e.pos())
             c = self.getCities()
             self.currentLine.setLine(QtCore.QLineF(QtCore.QPointF(*c[self.citySelected]), self.cursorPosition))
 
@@ -270,9 +273,12 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
                 if len(self.manualTour) == self.N:
                     self.addWay((self.manualTour[-1], self.manualTour[0]))
                     self.finishedFirst = True
+                    self.scene.removeItem(self.currentLine)
                 self.updateWays()
 
                 self.citySelected = idx
+
+        self.tourChange.emit(" ".join(map(str, self.manualTour)))
 
     def randInit(self):
         super().randInit()

@@ -66,6 +66,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.view.TSPLIBChange.connect(lambda x: self.ui.comboTSPLIB.setCurrentIndex(self.TSPLIBinstances[x]))
         self.ui.view.TSPLIBChange.connect(lambda x: self.ui.spinBoxN.setValue(int(re.sub("[^0-9]", "", x))))
         self.ui.view.zoomChange.connect(self.ui.sliderZoom.setValue)
+        self.ui.view.tourChange.connect(self.ui.currentTour.setText)
 
         if os.path.exists("concorde"):
             self.ui.checkBoxConcorde.setEnabled(True)
