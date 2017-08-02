@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <iostream>
+#include <random>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/connected_components.hpp>
 #include <boost/graph/stoer_wagner_min_cut.hpp>
