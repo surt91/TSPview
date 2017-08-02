@@ -193,7 +193,8 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
 
     def finish(self):
         while not self.step():
-            self.repaint()
+            if self.currentMethod == "LP & Cutting Planes":
+                self.viewport().repaint()
 
     def run(self, b=True):
         self.running = b
@@ -227,12 +228,16 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
         self.update()
 
     def init(self):
-        super().init()
-        self.rescale()
-        # add all cities
+        for e in self.edgeConcordeItems:
+            self.scene.removeItem(e)
+        self.edgeConcordeItems.clear()
+
         self.cityItems.clear()
         self.clearSolution()
         self.scene.clear()
+
+        super().init()
+        self.rescale()
 
         for n, point in enumerate(self.getCities()):
             x, y = point
@@ -318,20 +323,23 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
     def setDoConcorde(self, b):
         super().setDoConcorde(b)
         self.updateOptimum()
-
         if b:
-            # draw optimal
-            for a, b in self.concordeCoordinates():
-                x1, y1 = a
-                x2, y2 = b
-                item = QtWidgets.QGraphicsLineItem(x1, y1, x2, y2)
-                item.setPen(self.concordePen)
-                self.edgeConcordeItems.append(item)
-                self.scene.addItem(item)
+            self.concorde()
         else:
             for e in self.edgeConcordeItems:
                 self.scene.removeItem(e)
             self.edgeConcordeItems.clear()
+
+    def concorde(self):
+        super().concorde()
+        # draw optimal
+        for a, b in self.concordeCoordinates():
+            x1, y1 = a
+            x2, y2 = b
+            item = QtWidgets.QGraphicsLineItem(x1, y1, x2, y2)
+            item.setPen(self.concordePen)
+            self.edgeConcordeItems.append(item)
+            self.scene.addItem(item)
 
         self.update()
 
