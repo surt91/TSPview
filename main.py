@@ -76,8 +76,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def getTSPLIB(self):
         from urllib import request
+        opener = request.build_opener()
+        opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+        request.install_opener(opener)
         request.urlretrieve(
-            "http://www.iwr.uni-heidelberg.de/groups/comopt/software/TSPLIB95/tsp/ALL_tsp.tar.gz", "ALL_tsp.tar.gz")
+            "https://data.schawe.me/ALL_tsp.tar.gz", "ALL_tsp.tar.gz")
 
         os.makedirs("TSPLIB", exist_ok=True)
         import tarfile
