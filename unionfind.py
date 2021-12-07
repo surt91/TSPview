@@ -60,4 +60,3 @@ class UnionFindWrapper():
 
     def size(self, x):
         return self.S[x].find().size
-

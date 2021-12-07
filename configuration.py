@@ -4,7 +4,15 @@ from random import random, randint, choice
 from subprocess import call
 import gzip
 
-from heuristicgenerators import *
+from heuristicgenerators import (
+    nextNeighborGenerator,
+    greedyGenerator,
+    farInGenerator,
+    twoOptGenerator,
+    randomGenerator,
+    tourFromWays,
+    dist
+)
 try:
     from lp.CplexTSPSolver import CplexTSPSolver
 except ImportError:
@@ -34,7 +42,7 @@ class Configuration:
         self.maxY = 1
 
         self.lp = False
-        self.adjMatrix = [0]*self.N**2
+        self.adjMatrix = [0] * self.N**2
 
     def init(self):
         self.__ways = []
@@ -44,7 +52,7 @@ class Configuration:
         self.finishedFirst = False
         self.finished2Opt = False
         self.__n2Opt = 0
-        self.adjMatrix = [0]*self.N**2
+        self.adjMatrix = [0] * self.N**2
 
         if self.doConcorde:
             self.concorde()
@@ -110,9 +118,9 @@ class Configuration:
         minX = min(cities)[0]
         maxY = max(cities, key=lambda x: x[1])[1]
         minY = min(cities, key=lambda x: x[1])[1]
-        length = max((maxX-minX), (maxY-minY))
+        length = max((maxX - minX), (maxY - minY))
         # y-axis in Qt and TSPLIB are in different directions
-        return tuple(((x-minX)/length, (maxY-y)/length) for x, y in cities)
+        return tuple(((x - minX) / length, (maxY - y) / length) for x, y in cities)
 
     def TSPLIBInit(self, file, custom=False):
         self.currentEnsemble = "tsplib" if not custom else "custom"
@@ -217,22 +225,22 @@ class Configuration:
                 self.finished2Opt = True
 
     def length(self):
-        l = 0
+        len = 0
         if self.lp:
             c = self.getCities()
             for i in range(self.N):
                 for j in range(i):
-                    l += self.adjMatrix[i*self.N+j] * dist(c[i], c[j])
+                    len += self.adjMatrix[i * self.N + j] * dist(c[i], c[j])
         else:
             for a, b in self.getWayCoordinates():
-                l += dist(a, b)
-        return l
+                len += dist(a, b)
+        return len
 
     def optimalLength(self):
-        l = 0
+        len = 0
         for a, b in self.concordeCoordinates():
-            l += dist(a, b)
-        return l
+            len += dist(a, b)
+        return len
 
     def n2Opt(self):
         return self.__n2Opt
@@ -257,7 +265,7 @@ class Configuration:
 
     def clearSolution(self):
         self.__ways = []
-        self.adjMatrix = [0]*self.N**2
+        self.adjMatrix = [0] * self.N**2
         self.__n2Opt = 0
         self.finishedFirst = False
         self.finished2Opt = False

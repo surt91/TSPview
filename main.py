@@ -75,18 +75,22 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.view.changeMethod(str(self.ui.comboMethod.currentText()))
 
     def getTSPLIB(self):
-        from urllib import request
-        opener = request.build_opener()
-        opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-        request.install_opener(opener)
-        request.urlretrieve(
-            "https://data.schawe.me/ALL_tsp.tar.gz", "ALL_tsp.tar.gz")
+        try:
+            from urllib import request
+            opener = request.build_opener()
+            opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+            request.install_opener(opener)
+            request.urlretrieve(
+                "https://data.schawe.me/ALL_tsp.tar.gz", "ALL_tsp.tar.gz")
 
-        os.makedirs("TSPLIB", exist_ok=True)
-        import tarfile
-        tfile = tarfile.open("ALL_tsp.tar.gz", 'r:gz')
-        tfile.extractall('TSPLIB')
-        os.remove("ALL_tsp.tar.gz")
+            os.makedirs("TSPLIB", exist_ok=True)
+            import tarfile
+            tfile = tarfile.open("ALL_tsp.tar.gz", 'r:gz')
+            tfile.extractall('TSPLIB')
+            os.remove("ALL_tsp.tar.gz")
+        except Exception as e:
+            print("Error while fetching TSPLIB:", e)
+            os.makedirs("TSPLIB", exist_ok=True)
 
     def populateTSPLIB(self):
         import gzip
@@ -126,7 +130,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.view.setTSPLIB([os.path.join("TSPLIB", i) for i in doable])
 
     def initTSPLIB(self):
-        self.ui.view.TSPLIBInit(os.path.join("TSPLIB", self.ui.comboTSPLIB.currentText()+".tsp.gz"))
+        self.ui.view.TSPLIBInit(os.path.join("TSPLIB", self.ui.comboTSPLIB.currentText() + ".tsp.gz"))
 
     def testLP(self):
         try:

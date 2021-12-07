@@ -22,7 +22,7 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
         self.scene = QtWidgets.QGraphicsScene(self)
         self.setScene(self.scene)
         self.setRenderHint(QtGui.QPainter.Antialiasing)
-        #self.setDragMode(self.ScrollHandDrag)
+        # self.setDragMode(self.ScrollHandDrag)
         self.setResizeAnchor(self.AnchorUnderMouse)
         self.setTransformationAnchor(self.AnchorUnderMouse)
         self.cityItems = []
@@ -91,10 +91,10 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
     def updatePen(self):
         s = 1 / sqrt(self.N) / 10
 
-        self.concordePen.setWidth(s/2)
-        self.cityPen.setWidth(s/2)
-        self.tourPen.setWidth(s/2)
-        self.tourPenIncomplete.setWidth(s/2)
+        self.concordePen.setWidth(s / 2)
+        self.cityPen.setWidth(s / 2)
+        self.tourPen.setWidth(s / 2)
+        self.tourPenIncomplete.setWidth(s / 2)
         self.pointsize = s
 
     def getColorFromDialog(self, initial=QtCore.Qt.black):
@@ -133,12 +133,12 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
             c = self.getCities()
             for i in range(self.N):
                 for j in range(i):
-                    w = self.adjMatrix[i*self.N+j]
+                    w = self.adjMatrix[i * self.N + j]
                     if w > 10e-5:
                         x1, y1 = c[i]
                         x2, y2 = c[j]
                         item = QtWidgets.QGraphicsLineItem(x1, y1, x2, y2)
-                        if w < 1-10e-5:
+                        if w < 1 - 10e-5:
                             item.setPen(self.tourPenIncomplete)
                         else:
                             item.setPen(self.tourPen)
@@ -147,8 +147,8 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
 
                         if w != 1:
                             text = QtWidgets.QGraphicsTextItem("%.2f" % w)
-                            text.setPos((x1+x2)/2, (y1+y2)/2)
-                            text.setScale(2/1000)
+                            text.setPos((x1 + x2) / 2, (y1 + y2) / 2)
+                            text.setScale(2 / 1000)
                             text.setVisible(self.showValues)
                             self.textItems.append(text)
                             self.scene.addItem(text)
@@ -352,7 +352,7 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
     def updateOptimum(self):
         if self.doConcorde:
             self.optimumChanged.emit("%.4f" % self.optimalLength())
-            gap = "%.2f%%" % ((self.length() / (self.optimalLength()+1e-10) - 1) * 100)
+            gap = "%.2f%%" % ((self.length() / (self.optimalLength() + 1e-10) - 1) * 100)
         else:
             self.optimumChanged.emit("n/a")
             gap = "n/a"
@@ -360,8 +360,8 @@ class tspView(QtWidgets.QGraphicsView, Configuration):
 
     def saveSVG(self, name):
         pass
-        #img = QtGui.QImage(self.size(), QtGui.QImage.)
-        #p = QtGui.QPainter(img)
-        #self.render(p)
+        # img = QtGui.QImage(self.size(), QtGui.QImage.)
+        # p = QtGui.QPainter(img)
+        # self.render(p)
 
-        #img.save(name)
+        # img.save(name)
