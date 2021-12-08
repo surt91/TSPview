@@ -5,7 +5,6 @@ services:
     build: .
     environment:
       - DISPLAY=${DISPLAY}
-      - X11AUTH=${X11AUTH}
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
     network_mode: host

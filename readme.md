@@ -11,7 +11,9 @@ If you are running Linux and have an X server installed (probably true, XWayland
 
 ```bash
 docker-compose build
-X11AUTH=$(xauth list) docker-compose up
+# this is needed to allow access to zour X-server from within the Docker container
+xhost +local:
+docker-compose up
 ```
 
 However, LP solving is disabled, since I can not ship the CPLEX library.
